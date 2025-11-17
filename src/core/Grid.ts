@@ -106,11 +106,6 @@ export class Grid {
   }
 
   reset(): void {
-    this.forEachCell((cell) => {
-      if (cell.type !== CellType.Blocked && cell.type !== CellType.Start) {
-        cell.clearPipe();
-      }
-      cell.hasWater = false;
-    });
+    this.cells = this.initializeCells();
   }
 }
