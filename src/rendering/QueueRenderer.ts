@@ -1,6 +1,5 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Pipe } from '@/core/Pipe';
-import { PipeType } from '@/core/types';
 
 export class QueueRenderer {
   private queueGraphics: Graphics[] = [];

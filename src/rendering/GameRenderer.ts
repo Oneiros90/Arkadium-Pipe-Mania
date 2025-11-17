@@ -1,4 +1,4 @@
-import { Application, Graphics, Container, Text, TextStyle } from 'pixi.js';
+import { Application, Graphics, Container } from 'pixi.js';
 import { GameConfig } from '@/config/schemas';
 
 export class GameRenderer {
