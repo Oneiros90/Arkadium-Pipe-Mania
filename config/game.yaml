@@ -1,0 +1,24 @@
+grid:
+  width: 9
+  height: 7
+
+gameplay:
+  blockRatio: 0.15
+  minPathLength:
+    min: 5
+    max: 8
+  flowSpeed: 0.5
+  placementDelay: 2
+
+pipes:
+  - type: straight
+    weight: 1
+  - type: curved
+    weight: 1
+  - type: cross
+    weight: 0.5
+
+visual:
+  cellSize: 64
+  gridPadding: 10
+  queueSize: 5
