@@ -6,7 +6,7 @@ import { GridRenderer } from '@/rendering/GridRenderer';
 
 interface TestPipeConfig {
   pipe: Pipe;
-  waterDirection: Direction;
+  waterDirections: Direction[];
   label: string;
 }
 
@@ -20,6 +20,7 @@ class TestGrid {
   private animationPhase = 0;
   private tooltip: HTMLDivElement;
   private cols = 6;
+  private flowSpeed = 0.3;
 
   constructor(private rootElement: HTMLElement) {
     this.app = new Application();
@@ -63,7 +64,7 @@ class TestGrid {
     this.renderer.initialize();
     this.setupMouseEvents();
 
-    this.app.ticker.add(() => this.animate());
+    this.app.ticker.add((ticker) => this.animate(ticker.deltaMS / 1000));
   }
 
   private createTooltip(): HTMLDivElement {
@@ -108,24 +109,26 @@ class TestGrid {
 
   private setupTestConfigs(): void {
     this.testConfigs = [
-      { pipe: Pipe.createStraight(0), waterDirection: Direction.North, label: 'Straight V (N->S)' },
-      { pipe: Pipe.createStraight(0), waterDirection: Direction.South, label: 'Straight V (S->N)' },
-      { pipe: Pipe.createStraight(90), waterDirection: Direction.East, label: 'Straight H (E->W)' },
-      { pipe: Pipe.createStraight(90), waterDirection: Direction.West, label: 'Straight H (W->E)' },
+      { pipe: Pipe.createStraight(0), waterDirections: [Direction.North], label: 'Straight V (N->S)' },
+      { pipe: Pipe.createStraight(0), waterDirections: [Direction.South], label: 'Straight V (S->N)' },
+      { pipe: Pipe.createStraight(90), waterDirections: [Direction.East], label: 'Straight H (E->W)' },
+      { pipe: Pipe.createStraight(90), waterDirections: [Direction.West], label: 'Straight H (W->E)' },
       
-      { pipe: Pipe.createCurved(0), waterDirection: Direction.North, label: 'Curved NE (N->E)' },
-      { pipe: Pipe.createCurved(0), waterDirection: Direction.East, label: 'Curved NE (E->N)' },
-      { pipe: Pipe.createCurved(90), waterDirection: Direction.East, label: 'Curved ES (E->S)' },
-      { pipe: Pipe.createCurved(90), waterDirection: Direction.South, label: 'Curved ES (S->E)' },
-      { pipe: Pipe.createCurved(180), waterDirection: Direction.South, label: 'Curved SW (S->W)' },
-      { pipe: Pipe.createCurved(180), waterDirection: Direction.West, label: 'Curved SW (W->S)' },
-      { pipe: Pipe.createCurved(270), waterDirection: Direction.West, label: 'Curved WN (W->N)' },
-      { pipe: Pipe.createCurved(270), waterDirection: Direction.North, label: 'Curved WN (N->W)' },
+      { pipe: Pipe.createCurved(0), waterDirections: [Direction.North], label: 'Curved NE (N->E)' },
+      { pipe: Pipe.createCurved(0), waterDirections: [Direction.East], label: 'Curved NE (E->N)' },
+      { pipe: Pipe.createCurved(90), waterDirections: [Direction.East], label: 'Curved ES (E->S)' },
+      { pipe: Pipe.createCurved(90), waterDirections: [Direction.South], label: 'Curved ES (S->E)' },
+      { pipe: Pipe.createCurved(180), waterDirections: [Direction.South], label: 'Curved SW (S->W)' },
+      { pipe: Pipe.createCurved(180), waterDirections: [Direction.West], label: 'Curved SW (W->S)' },
+      { pipe: Pipe.createCurved(270), waterDirections: [Direction.West], label: 'Curved WN (W->N)' },
+      { pipe: Pipe.createCurved(270), waterDirections: [Direction.North], label: 'Curved WN (N->W)' },
       
-      { pipe: Pipe.createCross(), waterDirection: Direction.North, label: 'Cross (N->S)' },
-      { pipe: Pipe.createCross(), waterDirection: Direction.South, label: 'Cross (S->N)' },
-      { pipe: Pipe.createCross(), waterDirection: Direction.East, label: 'Cross (E->W)' },
-      { pipe: Pipe.createCross(), waterDirection: Direction.West, label: 'Cross (W->E)' },
+      { pipe: Pipe.createCross(), waterDirections: [Direction.North], label: 'Cross 1st pass (N->S)' },
+      { pipe: Pipe.createCross(), waterDirections: [Direction.South], label: 'Cross 1st pass (S->N)' },
+      { pipe: Pipe.createCross(), waterDirections: [Direction.East], label: 'Cross 1st pass (E->W)' },
+      { pipe: Pipe.createCross(), waterDirections: [Direction.West], label: 'Cross 1st pass (W->E)' },
+      { pipe: Pipe.createCross(), waterDirections: [Direction.North, Direction.East], label: 'Cross both (N then E)' },
+      { pipe: Pipe.createCross(), waterDirections: [Direction.South, Direction.West], label: 'Cross both (S then W)' },
     ];
   }
 
@@ -142,11 +145,8 @@ class TestGrid {
     });
   }
 
-  private animate(): void {
-    this.animationPhase += 0.003;
-    if (this.animationPhase > 1) {
-      this.animationPhase = 0;
-    }
+  private animate(deltaTime: number): void {
+    this.animationPhase += deltaTime * this.flowSpeed;
 
     this.testConfigs.forEach((config, index) => {
       const row = Math.floor(index / this.cols);
@@ -154,7 +154,12 @@ class TestGrid {
       const cell = this.grid.getCell({ row, col });
       
       if (cell && cell.pipe) {
-        cell.setWaterLevel(this.animationPhase, config.waterDirection);
+        const cyclePhase = this.animationPhase % config.waterDirections.length;
+        config.waterDirections.forEach((dir, index) => {
+          const flowPhase = Math.max(0, Math.min(1, cyclePhase - index));
+          cell.setWaterLevel(flowPhase, dir);
+        });
+        
         this.renderer.updateCell(row, col);
       }
     });

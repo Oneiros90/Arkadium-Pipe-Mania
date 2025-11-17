@@ -1,5 +1,5 @@
 import { Cell } from '@/core/Cell';
-import { Position } from '@/core/types';
+import { Position, Direction } from '@/core/types';
 import { PathValidator } from './PathValidator';
 import { GameConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
@@ -15,6 +15,7 @@ export class FlowSystem {
   private state: FlowState = FlowState.Idle;
   private currentCell: Cell | null = null;
   private currentCellProgress: number = 0;
+  private currentEntryDirection: Direction | null = null;
   private requiredPathLength: number = 0;
   private completedCells: number = 0;
 
@@ -32,10 +33,6 @@ export class FlowSystem {
     this.completedCells = 0;
     this.state = FlowState.Flowing;
 
-    if (this.currentCell) {
-      this.currentCell.setWaterLevel(0);
-    }
-
     logger.info('FlowSystem', 'Water flow started', {
       requiredLength,
       startPosition
@@ -43,14 +40,14 @@ export class FlowSystem {
   }
 
   update(deltaTime: number): void {
-    if (this.state !== FlowState.Flowing || !this.currentCell) {
+    if (this.state !== FlowState.Flowing || !this.currentCell || !this.currentEntryDirection) {
       return;
     }
 
     const cellsPerSecond = this.config.gameplay.flowSpeed;
     this.currentCellProgress += deltaTime * cellsPerSecond;
 
-    this.currentCell.setWaterLevel(this.currentCellProgress, this.currentCell.waterEntryDirection || undefined);
+    this.currentCell.setWaterLevel(this.currentCellProgress, this.currentEntryDirection);
     this.onCellUpdate(this.currentCell.position.row, this.currentCell.position.col);
 
     if (this.currentCellProgress >= 1) {
@@ -59,15 +56,15 @@ export class FlowSystem {
   }
 
   private advanceToNextCell(): void {
-    if (!this.currentCell) {
+    if (!this.currentCell || !this.currentEntryDirection) {
       return;
     }
 
     this.currentCell.fillWithWater();
     
-    if (this.currentCell.waterEntryDirection && this.currentCell.hasPipe()) {
-      this.currentCell.markDirectionUsed(this.currentCell.waterEntryDirection);
-      const exitDir = this.currentCell.pipe!.getExitDirection(this.currentCell.waterEntryDirection);
+    if (this.currentCell.hasPipe()) {
+      this.currentCell.markDirectionUsed(this.currentEntryDirection);
+      const exitDir = this.currentCell.pipe!.getExitDirection(this.currentEntryDirection);
       if (exitDir) {
         this.currentCell.markDirectionUsed(exitDir);
       }
@@ -83,8 +80,8 @@ export class FlowSystem {
     }
 
     this.currentCell = next.cell;
+    this.currentEntryDirection = next.entryDirection;
     this.currentCellProgress = 0;
-    this.currentCell.setWaterLevel(0, next.entryDirection);
   }
 
   private handleFlowEnd(): void {
@@ -108,6 +105,7 @@ export class FlowSystem {
   reset(): void {
     this.state = FlowState.Idle;
     this.currentCell = null;
+    this.currentEntryDirection = null;
     this.currentCellProgress = 0;
     this.completedCells = 0;
   }

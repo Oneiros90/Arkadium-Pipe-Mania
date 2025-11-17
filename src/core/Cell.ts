@@ -1,9 +1,13 @@
 import { CellType, Position, Direction } from './types';
 import { Pipe } from './Pipe';
 
+interface WaterFlow {
+  level: number;
+  entryDirection: Direction;
+}
+
 export class Cell {
-  public waterLevel: number = 0;
-  public waterEntryDirection: Direction | null = null;
+  public waterFlows: WaterFlow[] = [];
   public usedDirections: Set<Direction> = new Set();
 
   constructor(
@@ -30,7 +34,7 @@ export class Cell {
   }
 
   canPlacePipe(): boolean {
-    if (this.waterLevel > 0) {
+    if (this.waterFlows.length > 0) {
       return false;
     }
     return this.type === CellType.Empty || this.type === CellType.Pipe;
@@ -48,22 +52,30 @@ export class Cell {
     this.pipe = null;
     this.type = CellType.Empty;
     this.hasWater = false;
-    this.waterLevel = 0;
-    this.waterEntryDirection = null;
+    this.waterFlows = [];
     this.usedDirections.clear();
   }
 
   fillWithWater(): void {
     this.hasWater = true;
-    this.waterLevel = 1;
+    this.waterFlows.forEach(flow => flow.level = 1);
   }
 
-  setWaterLevel(level: number, entryDirection?: Direction): void {
-    this.waterLevel = Math.max(0, Math.min(1, level));
-    this.hasWater = this.waterLevel > 0;
-    if (entryDirection && !this.waterEntryDirection) {
-      this.waterEntryDirection = entryDirection;
+  setWaterLevel(level: number, entryDirection: Direction): void {
+    const clampedLevel = Math.max(0, Math.min(1, level));
+    const existingFlow = this.waterFlows.find(f => f.entryDirection === entryDirection);
+    
+    if (existingFlow) {
+      existingFlow.level = clampedLevel;
+    } else {
+      this.waterFlows.push({ level: clampedLevel, entryDirection });
     }
+    
+    this.hasWater = this.waterFlows.some(f => f.level > 0);
+  }
+
+  getWaterFlow(entryDirection: Direction): WaterFlow | undefined {
+    return this.waterFlows.find(f => f.entryDirection === entryDirection);
   }
 
   canEnterFromDirection(direction: Direction): boolean {

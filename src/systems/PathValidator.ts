@@ -124,8 +124,11 @@ export class PathValidator {
 
       const oppositeDir = this.grid.getOppositeDirection(direction);
 
-      if (neighbor.hasWater && neighbor.waterLevel >= 1 && !neighbor.canEnterFromDirection(oppositeDir)) {
-        continue;
+      if (neighbor.hasWater && neighbor.waterFlows.length > 0 && !neighbor.canEnterFromDirection(oppositeDir)) {
+        const isFullyFilled = neighbor.waterFlows.every(flow => flow.level >= 1);
+        if (isFullyFilled) {
+          continue;
+        }
       }
 
       if (current.isStart()) {
@@ -134,8 +137,9 @@ export class PathValidator {
             return { cell: neighbor, entryDirection: oppositeDir };
           }
         }
-      } else if (current.hasPipe() && current.waterEntryDirection) {
-        const exitDir = current.pipe!.getExitDirection(current.waterEntryDirection);
+      } else if (current.hasPipe() && current.waterFlows.length > 0) {
+        const lastFlow = current.waterFlows[current.waterFlows.length - 1];
+        const exitDir = current.pipe!.getExitDirection(lastFlow.entryDirection);
         if (exitDir === direction) {
           if (neighbor.hasPipe() && neighbor.canEnterFromDirection(oppositeDir)) {
             if (neighbor.pipe!.hasConnection(oppositeDir)) {
