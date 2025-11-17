@@ -2,7 +2,7 @@ import { Grid } from '@/core/Grid';
 import { Pipe } from '@/core/Pipe';
 import { Position } from '@/core/types';
 import { GameConfig } from '@/config/schemas';
-import { SeededRandom } from '@/utils/SeededRandom';
+import { Random } from '@/utils/Random';
 import { GridInitializer } from '@/systems/GridInitializer';
 import { PipeFactory } from '@/systems/PipeFactory';
 import { PathValidator } from '@/systems/PathValidator';
@@ -18,7 +18,7 @@ export enum GamePhase {
 
 export class GameState {
   private grid: Grid;
-  private random: SeededRandom;
+  private random: Random;
   private pipeFactory: PipeFactory;
   private gridInitializer: GridInitializer;
   private pathValidator: PathValidator;
@@ -38,7 +38,7 @@ export class GameState {
     private onGameEnd: (won: boolean, pathLength: number, requiredLength: number) => void
   ) {
     this.grid = new Grid(config.grid.width, config.grid.height);
-    this.random = new SeededRandom(config.seed);
+    this.random = new Random(config.seed);
     this.pipeFactory = new PipeFactory(this.random, config.pipes);
     this.gridInitializer = new GridInitializer(this.grid, this.random, config);
     this.pathValidator = new PathValidator(this.grid);
@@ -64,6 +64,7 @@ export class GameState {
     
     this.fillPipeQueue();
     this.phase = GamePhase.Placement;
+    this.notifyGridUpdate();
     
     logger.info('GameState', 'Game started', {
       startPosition: this.startPosition,
@@ -99,7 +100,7 @@ export class GameState {
   }
 
   handleCellClick(row: number, col: number): void {
-    if (this.phase !== GamePhase.Placement || !this.canPlacePipes) {
+    if (this.phase !== GamePhase.Placement && this.phase !== GamePhase.Flowing) {
       return;
     }
 
@@ -123,8 +124,8 @@ export class GameState {
 
     logger.debug('GameState', 'Pipe placed', { position, pipeType: pipe.type });
 
-    if (!this.canPlacePipes) {
-      this.placementTimer = 0;
+    if (this.canPlacePipes) {
+      this.startPlacementTimer();
     }
   }
 
@@ -168,5 +169,11 @@ export class GameState {
     this.placementTimer = 0;
     this.canPlacePipes = true;
     this.start();
+  }
+
+  private notifyGridUpdate(): void {
+    this.grid.forEachCell((cell) => {
+      this.onCellUpdate(cell.position.row, cell.position.col);
+    });
   }
 }

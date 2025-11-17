@@ -45,12 +45,8 @@ class Game {
     );
 
     this.setupClickHandler();
-    this.gridRenderer.initialize();
     this.gameState.start();
-
-    setTimeout(() => {
-      this.gameState.startPlacementTimer();
-    }, config.gameplay.placementDelay * 1000);
+    this.gridRenderer.initialize();
 
     this.lastTime = performance.now();
     this.gameLoop(this.lastTime);
