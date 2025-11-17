@@ -1,7 +1,7 @@
 import { Graphics, Container } from 'pixi.js';
 import { Grid } from '@/core/Grid';
 import { Cell } from '@/core/Cell';
-import { CellType } from '@/core/types';
+import { CellType, Direction } from '@/core/types';
 
 export class GridRenderer {
   private cellGraphics: Map<string, Graphics> = new Map();
@@ -64,7 +64,6 @@ export class GridRenderer {
 
     if (!cell.pipe) return;
 
-    const color = cell.hasWater ? 0x00ccff : 0xcccccc;
     const center = this.cellSize / 2;
     const pipeWidth = this.cellSize * 0.2;
     const halfPipe = pipeWidth / 2;
@@ -72,8 +71,9 @@ export class GridRenderer {
     const connections = cell.pipe.getActiveConnections();
 
     connections.forEach((direction) => {
+      const emptyColor = 0xcccccc;
       graphic.rect(0, 0, 1, 1);
-      graphic.fill(color);
+      graphic.fill(emptyColor);
 
       switch (direction) {
         case 'N':
@@ -89,8 +89,66 @@ export class GridRenderer {
           graphic.rect(0, center - halfPipe, center + halfPipe, pipeWidth);
           break;
       }
-      graphic.fill(color);
+      graphic.fill(emptyColor);
     });
+
+    if (cell.waterLevel > 0 && cell.waterEntryDirection) {
+      const waterColor = 0x00ccff;
+      const fillAmount = cell.waterLevel;
+      const entryDir = cell.waterEntryDirection;
+      const exitDir = cell.pipe.getExitDirection(entryDir);
+
+      const drawWaterSegment = (direction: Direction, progress: number) => {
+        if (progress <= 0) return;
+        progress = Math.min(1, progress);
+
+        graphic.rect(0, 0, 1, 1);
+        graphic.fill(waterColor);
+
+        switch (direction) {
+          case 'N': {
+            const startY = 0;
+            const endY = center + halfPipe;
+            const currentLength = (endY - startY) * progress;
+            graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
+            break;
+          }
+          case 'S': {
+            const startY = center - halfPipe;
+            const length = center + halfPipe;
+            const currentLength = length * progress;
+            graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
+            break;
+          }
+          case 'E': {
+            const startX = center - halfPipe;
+            const length = center + halfPipe;
+            const currentLength = length * progress;
+            graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
+            break;
+          }
+          case 'W': {
+            const startX = 0;
+            const endX = center + halfPipe;
+            const currentLength = (endX - startX) * progress;
+            graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
+            break;
+          }
+        }
+        graphic.fill(waterColor);
+      };
+
+      if (fillAmount <= 0.5) {
+        const entryProgress = fillAmount * 2;
+        drawWaterSegment(entryDir, entryProgress);
+      } else {
+        drawWaterSegment(entryDir, 1);
+        if (exitDir) {
+          const exitProgress = (fillAmount - 0.5) * 2;
+          drawWaterSegment(exitDir, exitProgress);
+        }
+      }
+    }
   }
 
   updateCell(row: number, col: number): void {
