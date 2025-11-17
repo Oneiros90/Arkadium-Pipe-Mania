@@ -33,6 +33,13 @@ export class FlowSystem {
     this.completedCells = 0;
     this.state = FlowState.Flowing;
 
+    if (this.currentCell) {
+      const next = this.validator.getNextCell(this.currentCell.position);
+      if (next) {
+        this.currentEntryDirection = next.entryDirection;
+      }
+    }
+
     logger.info('FlowSystem', 'Water flow started', {
       requiredLength,
       startPosition
