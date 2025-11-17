@@ -13,7 +13,8 @@ export default defineConfig({
     assetsDir: 'assets',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html')
+        main: resolve(__dirname, 'index.html'),
+        test: resolve(__dirname, 'tests/rendering.html')
       }
     }
   },

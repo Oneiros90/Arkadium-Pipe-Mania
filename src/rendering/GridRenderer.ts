@@ -98,7 +98,26 @@ export class GridRenderer {
       const entryDir = cell.waterEntryDirection;
       const exitDir = cell.pipe.getExitDirection(entryDir);
 
-      const drawWaterSegment = (direction: Direction, progress: number) => {
+      const getSegmentLength = (direction: Direction, isEntry: boolean): number => {
+        switch (direction) {
+          case 'N':
+            return isEntry ? (center + halfPipe) : (center - halfPipe);
+          case 'S':
+            return isEntry ? (this.cellSize - center + halfPipe) : (this.cellSize - center - halfPipe);
+          case 'E':
+            return isEntry ? (this.cellSize - center + halfPipe) : (this.cellSize - center - halfPipe);
+          case 'W':
+            return isEntry ? (center + halfPipe) : (center - halfPipe);
+          default:
+            return 0;
+        }
+      };
+
+      const entryLength = getSegmentLength(entryDir, true);
+      const exitLength = exitDir ? getSegmentLength(exitDir, false) : 0;
+      const totalLength = entryLength + exitLength;
+
+      const drawWaterSegment = (direction: Direction, progress: number, isEntry: boolean) => {
         if (progress <= 0) return;
         progress = Math.min(1, progress);
 
@@ -107,45 +126,80 @@ export class GridRenderer {
 
         switch (direction) {
           case 'N': {
-            const startY = 0;
-            const endY = center + halfPipe;
-            const currentLength = (endY - startY) * progress;
-            graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
+            if (isEntry) {
+              const startY = 0;
+              const endY = center + halfPipe;
+              const currentLength = (endY - startY) * progress;
+              graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
+            } else {
+              const startY = center - halfPipe;
+              const endY = 0;
+              const totalLength = startY - endY;
+              const currentLength = totalLength * progress;
+              graphic.rect(center - halfPipe, startY - currentLength, pipeWidth, currentLength);
+            }
             break;
           }
           case 'S': {
-            const startY = center - halfPipe;
-            const length = center + halfPipe;
-            const currentLength = length * progress;
-            graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
+            if (isEntry) {
+              const startY = this.cellSize;
+              const endY = center - halfPipe;
+              const totalLength = startY - endY;
+              const currentLength = totalLength * progress;
+              graphic.rect(center - halfPipe, startY - currentLength, pipeWidth, currentLength);
+            } else {
+              const startY = center + halfPipe;
+              const endY = this.cellSize;
+              const currentLength = (endY - startY) * progress;
+              graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
+            }
             break;
           }
           case 'E': {
-            const startX = center - halfPipe;
-            const length = center + halfPipe;
-            const currentLength = length * progress;
-            graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
+            if (isEntry) {
+              const startX = this.cellSize;
+              const endX = center - halfPipe;
+              const totalLength = startX - endX;
+              const currentLength = totalLength * progress;
+              graphic.rect(startX - currentLength, center - halfPipe, currentLength, pipeWidth);
+            } else {
+              const startX = center + halfPipe;
+              const endX = this.cellSize;
+              const currentLength = (endX - startX) * progress;
+              graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
+            }
             break;
           }
           case 'W': {
-            const startX = 0;
-            const endX = center + halfPipe;
-            const currentLength = (endX - startX) * progress;
-            graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
+            if (isEntry) {
+              const startX = 0;
+              const endX = center + halfPipe;
+              const currentLength = (endX - startX) * progress;
+              graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
+            } else {
+              const startX = center - halfPipe;
+              const endX = 0;
+              const totalLength = startX - endX;
+              const currentLength = totalLength * progress;
+              graphic.rect(startX - currentLength, center - halfPipe, currentLength, pipeWidth);
+            }
             break;
           }
         }
         graphic.fill(waterColor);
       };
 
-      if (fillAmount <= 0.5) {
-        const entryProgress = fillAmount * 2;
-        drawWaterSegment(entryDir, entryProgress);
+      const entryRatio = entryLength / totalLength;
+      const exitRatio = exitLength / totalLength;
+
+      if (fillAmount <= entryRatio) {
+        const entryProgress = fillAmount / entryRatio;
+        drawWaterSegment(entryDir, entryProgress, true);
       } else {
-        drawWaterSegment(entryDir, 1);
+        drawWaterSegment(entryDir, 1, true);
         if (exitDir) {
-          const exitProgress = (fillAmount - 0.5) * 2;
-          drawWaterSegment(exitDir, exitProgress);
+          const exitProgress = (fillAmount - entryRatio) / exitRatio;
+          drawWaterSegment(exitDir, exitProgress, false);
         }
       }
     }
