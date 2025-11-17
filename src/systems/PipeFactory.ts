@@ -1,6 +1,6 @@
 import { Pipe } from '@/core/Pipe';
 import { PipeType } from '@/core/types';
-import { SeededRandom } from '@/utils/SeededRandom';
+import { Random } from '@/utils/Random';
 import { PipeConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 
@@ -9,7 +9,7 @@ export class PipeFactory {
   private totalWeight: number = 0;
 
   constructor(
-    private random: SeededRandom,
+    private random: Random,
     pipeConfigs: PipeConfig[]
   ) {
     this.initializeWeights(pipeConfigs);

@@ -1,13 +1,13 @@
 import { Grid } from '@/core/Grid';
 import { Position, Direction } from '@/core/types';
-import { SeededRandom } from '@/utils/SeededRandom';
+import { Random } from '@/utils/Random';
 import { GameConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 
 export class GridInitializer {
   constructor(
     private grid: Grid,
-    private random: SeededRandom,
+    private random: Random,
     private config: GameConfig
   ) {}
 

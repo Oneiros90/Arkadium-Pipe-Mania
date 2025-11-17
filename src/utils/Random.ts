@@ -1,4 +1,4 @@
-export class SeededRandom {
+export class Random {
   private seed: number;
 
   constructor(seed: number = Date.now()) {
