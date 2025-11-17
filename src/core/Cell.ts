@@ -1,7 +1,11 @@
-import { CellType, Position } from './types';
+import { CellType, Position, Direction } from './types';
 import { Pipe } from './Pipe';
 
 export class Cell {
+  public waterLevel: number = 0;
+  public waterEntryDirection: Direction | null = null;
+  public usedDirections: Set<Direction> = new Set();
+
   constructor(
     public readonly position: Position,
     public type: CellType = CellType.Empty,
@@ -26,6 +30,9 @@ export class Cell {
   }
 
   canPlacePipe(): boolean {
+    if (this.waterLevel > 0) {
+      return false;
+    }
     return this.type === CellType.Empty || this.type === CellType.Pipe;
   }
 
@@ -41,9 +48,32 @@ export class Cell {
     this.pipe = null;
     this.type = CellType.Empty;
     this.hasWater = false;
+    this.waterLevel = 0;
+    this.waterEntryDirection = null;
+    this.usedDirections.clear();
   }
 
   fillWithWater(): void {
     this.hasWater = true;
+    this.waterLevel = 1;
+  }
+
+  setWaterLevel(level: number, entryDirection?: Direction): void {
+    this.waterLevel = Math.max(0, Math.min(1, level));
+    this.hasWater = this.waterLevel > 0;
+    if (entryDirection && !this.waterEntryDirection) {
+      this.waterEntryDirection = entryDirection;
+    }
+  }
+
+  canEnterFromDirection(direction: Direction): boolean {
+    if (!this.hasPipe() || !this.pipe!.hasConnection(direction)) {
+      return false;
+    }
+    return !this.usedDirections.has(direction);
+  }
+
+  markDirectionUsed(direction: Direction): void {
+    this.usedDirections.add(direction);
   }
 }
