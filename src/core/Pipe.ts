@@ -16,6 +16,29 @@ export class Pipe {
     return this.getActiveConnections().includes(direction);
   }
 
+  getExitDirection(entryDirection: Direction): Direction | null {
+    const connections = this.getActiveConnections();
+    
+    if (!connections.includes(entryDirection)) {
+      return null;
+    }
+
+    if (this.type === PipeType.Cross) {
+      switch (entryDirection) {
+        case Direction.North:
+          return Direction.South;
+        case Direction.South:
+          return Direction.North;
+        case Direction.East:
+          return Direction.West;
+        case Direction.West:
+          return Direction.East;
+      }
+    }
+
+    return connections.find(d => d !== entryDirection) || null;
+  }
+
   static createStraight(rotation: 0 | 90 = 0): Pipe {
     return new Pipe(
       PipeType.Straight,

@@ -88,8 +88,11 @@ export class PathValidator {
           }
         }
       } else if (current.hasPipe()) {
-        if (this.isValidConnection(current, neighbor, direction)) {
-          return { cell: neighbor, direction };
+        const exitDir = current.pipe!.getExitDirection(excludeDirection!);
+        if (exitDir === direction) {
+          if (this.isValidConnection(current, neighbor, direction)) {
+            return { cell: neighbor, direction };
+          }
         }
       }
     }
@@ -99,5 +102,50 @@ export class PathValidator {
 
   getPathLength(start: Position): number {
     return this.findConnectedPath(start).length;
+  }
+
+  getStartCell(start: Position): Cell | null {
+    return this.grid.getCell(start);
+  }
+
+  getNextCell(currentPosition: Position): { cell: Cell; entryDirection: Direction } | null {
+    const current = this.grid.getCell(currentPosition);
+    if (!current) {
+      return null;
+    }
+
+    const directions = [Direction.North, Direction.East, Direction.South, Direction.West];
+    
+    for (const direction of directions) {
+      const neighbor = this.grid.getNeighbor(currentPosition, direction);
+      if (!neighbor) {
+        continue;
+      }
+
+      const oppositeDir = this.grid.getOppositeDirection(direction);
+
+      if (neighbor.hasWater && neighbor.waterLevel >= 1 && !neighbor.canEnterFromDirection(oppositeDir)) {
+        continue;
+      }
+
+      if (current.isStart()) {
+        if (neighbor.hasPipe() && neighbor.canEnterFromDirection(oppositeDir)) {
+          if (neighbor.pipe!.hasConnection(oppositeDir)) {
+            return { cell: neighbor, entryDirection: oppositeDir };
+          }
+        }
+      } else if (current.hasPipe() && current.waterEntryDirection) {
+        const exitDir = current.pipe!.getExitDirection(current.waterEntryDirection);
+        if (exitDir === direction) {
+          if (neighbor.hasPipe() && neighbor.canEnterFromDirection(oppositeDir)) {
+            if (neighbor.pipe!.hasConnection(oppositeDir)) {
+              return { cell: neighbor, entryDirection: oppositeDir };
+            }
+          }
+        }
+      }
+    }
+
+    return null;
   }
 }
