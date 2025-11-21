@@ -1,5 +1,5 @@
 import { Application, Graphics, Container } from 'pixi.js';
-import { GameConfig } from '@/config/schemas';
+import { GameConfig, VisualConfig } from '@/config/schemas';
 
 export class GameRenderer {
   private app: Application;
@@ -9,7 +9,8 @@ export class GameRenderer {
 
   constructor(
     private container: HTMLElement,
-    private config: GameConfig
+    private config: GameConfig,
+    private visualConfig: VisualConfig
   ) {
     this.app = new Application();
     this.gridContainer = new Container();
@@ -18,8 +19,8 @@ export class GameRenderer {
   }
 
   async initialize(): Promise<void> {
-    const gridWidth = this.config.grid.width * this.config.visual.cellSize + this.config.visual.gridPadding * 2;
-    const gridHeight = this.config.grid.height * this.config.visual.cellSize + this.config.visual.gridPadding * 2;
+    const gridWidth = this.config.grid.width * this.visualConfig.cellSize + this.visualConfig.gridPadding * 2;
+    const gridHeight = this.config.grid.height * this.visualConfig.cellSize + this.visualConfig.gridPadding * 2;
     const queueWidth = 200;
     const totalWidth = gridWidth + queueWidth + 20;
 
@@ -32,11 +33,11 @@ export class GameRenderer {
 
     this.container.appendChild(this.app.canvas);
 
-    this.gridContainer.x = this.config.visual.gridPadding;
-    this.gridContainer.y = this.config.visual.gridPadding;
+    this.gridContainer.x = this.visualConfig.gridPadding;
+    this.gridContainer.y = this.visualConfig.gridPadding;
 
     this.queueContainer.x = gridWidth + 20;
-    this.queueContainer.y = this.config.visual.gridPadding;
+    this.queueContainer.y = this.visualConfig.gridPadding;
 
     this.app.stage.addChild(this.gridContainer);
     this.app.stage.addChild(this.queueContainer);
@@ -50,8 +51,8 @@ export class GameRenderer {
     bg.rect(
       0,
       0,
-      this.config.grid.width * this.config.visual.cellSize,
-      this.config.grid.height * this.config.visual.cellSize
+      this.config.grid.width * this.visualConfig.cellSize,
+      this.config.grid.height * this.visualConfig.cellSize
     );
     bg.fill(0x2a2a2a);
     this.gridContainer.addChild(bg);
@@ -70,7 +71,7 @@ export class GameRenderer {
   }
 
   getCellSize(): number {
-    return this.config.visual.cellSize;
+    return this.visualConfig.cellSize;
   }
 
   destroy(): void {

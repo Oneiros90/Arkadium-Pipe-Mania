@@ -17,17 +17,19 @@ class Game {
     logger.info('Game', 'Initializing game...');
 
     const config = await ConfigLoader.loadFromFile('/config/game.yaml');
+    const visualConfig = await ConfigLoader.loadVisualConfig('/config/visual.yaml');
     
     const container = document.getElementById('game-container');
     if (!container) {
       throw new Error('Game container not found');
     }
 
-    this.gameRenderer = new GameRenderer(container, config);
+    this.gameRenderer = new GameRenderer(container, config, visualConfig);
     await this.gameRenderer.initialize();
 
     this.gameState = new GameState(
       config,
+      visualConfig,
       this.handleCellUpdate.bind(this),
       this.handleQueueUpdate.bind(this),
       this.handleGameEnd.bind(this)
@@ -36,7 +38,7 @@ class Game {
     this.gridRenderer = new GridRenderer(
       this.gameRenderer.getGridContainer(),
       this.gameState.getGrid(),
-      this.gameRenderer.getCellSize()
+      visualConfig
     );
 
     this.queueRenderer = new QueueRenderer(

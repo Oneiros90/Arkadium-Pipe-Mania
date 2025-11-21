@@ -2,14 +2,15 @@ import { Graphics, Container } from 'pixi.js';
 import { Grid } from '@/core/Grid';
 import { Cell } from '@/core/Cell';
 import { CellType, Direction } from '@/core/types';
+import { VisualConfig } from '@/config/schemas';
 
 export class GridRenderer {
-  private cellGraphics: Map<string, Graphics> = new Map();
+  private cellGraphics: Map<string, { bg: Graphics; fg: Graphics }> = new Map();
 
   constructor(
     private container: Container,
     private grid: Grid,
-    private cellSize: number
+    private visualConfig: VisualConfig
   ) {}
 
   initialize(): void {
@@ -24,77 +25,150 @@ export class GridRenderer {
 
   private drawCell(cell: Cell): void {
     const key = this.getCellKey(cell.position.row, cell.position.col);
-    let graphic = this.cellGraphics.get(key);
+    let entry = this.cellGraphics.get(key);
 
-    if (!graphic) {
-      graphic = new Graphics();
-      graphic.x = cell.position.col * this.cellSize;
-      graphic.y = cell.position.row * this.cellSize;
-      this.container.addChild(graphic);
-      this.cellGraphics.set(key, graphic);
+    if (!entry) {
+      const bg = new Graphics();
+      const fg = new Graphics();
+      bg.x = fg.x = cell.position.col * this.visualConfig.cellSize;
+      bg.y = fg.y = cell.position.row * this.visualConfig.cellSize;
+      this.container.addChild(bg);
+      this.container.addChild(fg);
+      entry = { bg, fg };
+      this.cellGraphics.set(key, entry);
     }
 
-    graphic.clear();
+    const { bg, fg } = entry;
 
-    const padding = 2;
-    const size = this.cellSize - padding * 2;
+    bg.clear();
+    fg.clear();
 
     switch (cell.type) {
+      case CellType.Empty:
+        bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
+        bg.stroke({ width: 1, color: this.visualConfig.borderColor });
+        break;
       case CellType.Blocked:
-        graphic.rect(padding, padding, size, size);
-        graphic.fill(0x444444);
+        bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
+        bg.fill(this.visualConfig.blockedColor);
         break;
       case CellType.Start:
-        graphic.rect(padding, padding, size, size);
-        graphic.fill(0x00aaff);
-        break;
-      case CellType.Empty:
-        graphic.rect(padding, padding, size, size);
-        graphic.stroke({ width: 1, color: 0x555555 });
+        bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
+        bg.fill(this.visualConfig.startColor);
         break;
       case CellType.Pipe:
-        this.drawPipeCell(graphic, cell, padding, size);
+        this.drawPipeCell(bg, fg, cell);
         break;
     }
   }
 
-  private drawPipeCell(graphic: Graphics, cell: Cell, padding: number, size: number): void {
-    graphic.rect(padding, padding, size, size);
-    graphic.stroke({ width: 1, color: 0x555555 });
+  private drawPipeCell(bg: Graphics, fg: Graphics, cell: Cell): void {
+    bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
+    bg.stroke({ width: 1, color: this.visualConfig.borderColor });
 
     if (!cell.pipe) return;
 
-    const center = this.cellSize / 2;
-    const pipeWidth = this.cellSize * 0.2;
+    const center = this.visualConfig.cellSize / 2;
+    const pipeWidth = this.visualConfig.cellSize * this.visualConfig.pipeWidthRatio;
     const halfPipe = pipeWidth / 2;
 
     const connections = cell.pipe.getActiveConnections();
 
     connections.forEach((direction) => {
-      const emptyColor = 0xcccccc;
-      graphic.rect(0, 0, 1, 1);
-      graphic.fill(emptyColor);
+      const emptyColor = this.visualConfig.pipeEmptyColor;
 
       switch (direction) {
         case 'N':
-          graphic.rect(center - halfPipe, 0, pipeWidth, center + halfPipe);
+          fg.rect(center - halfPipe, 0, pipeWidth, center + halfPipe);
           break;
         case 'S':
-          graphic.rect(center - halfPipe, center - halfPipe, pipeWidth, center + halfPipe);
+          fg.rect(center - halfPipe, center - halfPipe, pipeWidth, center + halfPipe);
           break;
         case 'E':
-          graphic.rect(center - halfPipe, center - halfPipe, center + halfPipe, pipeWidth);
+          fg.rect(center - halfPipe, center - halfPipe, center + halfPipe, pipeWidth);
           break;
         case 'W':
-          graphic.rect(0, center - halfPipe, center + halfPipe, pipeWidth);
+          fg.rect(0, center - halfPipe, center + halfPipe, pipeWidth);
           break;
       }
-      graphic.fill(emptyColor);
+      fg.fill(emptyColor);
     });
 
     cell.waterFlows.forEach(flow => {
-      this.drawWaterFlow(graphic, cell, flow.level, flow.entryDirection, center, halfPipe, pipeWidth);
+      this.drawWaterFlow(fg, cell, flow.level, flow.entryDirection, center, halfPipe, pipeWidth);
     });
+  }
+
+  private getPathFunction(entryDir: Direction, exitDir: Direction | null): (t: number) => { x: number; y: number } {
+    const center = this.visualConfig.cellSize / 2;
+    const halfPipe = (this.visualConfig.cellSize * this.visualConfig.pipeWidthRatio) / 2;
+
+    const getEdgePoint = (dir: Direction): { x: number; y: number } => {
+      switch (dir) {
+        case 'N': return { x: center, y: 0 };
+        case 'S': return { x: center, y: this.visualConfig.cellSize };
+        case 'E': return { x: this.visualConfig.cellSize, y: center };
+        case 'W': return { x: 0, y: center };
+        default: return { x: center, y: center };
+      }
+    };
+
+    const getCenterPoint = (dir: Direction): { x: number; y: number } => {
+      switch (dir) {
+        case 'N': return { x: center, y: center + halfPipe };
+        case 'S': return { x: center, y: center - halfPipe };
+        case 'E': return { x: center - halfPipe, y: center };
+        case 'W': return { x: center + halfPipe, y: center };
+        default: return { x: center, y: center };
+      }
+    };
+
+    const entryEdge = getEdgePoint(entryDir);
+    const entryCenter = getCenterPoint(entryDir);
+
+    if (!exitDir) {
+      return (t: number) => ({
+        x: entryEdge.x + (entryCenter.x - entryEdge.x) * t,
+        y: entryEdge.y + (entryCenter.y - entryEdge.y) * t
+      });
+    }
+
+    const exitCenter = getCenterPoint(exitDir);
+    const exitEdge = getEdgePoint(exitDir);
+
+    const isStraight = (
+      (entryDir === 'N' && exitDir === 'S') ||
+      (entryDir === 'S' && exitDir === 'N') ||
+      (entryDir === 'E' && exitDir === 'W') ||
+      (entryDir === 'W' && exitDir === 'E')
+    );
+
+    if (isStraight) {
+      return (t: number) => ({
+        x: entryEdge.x + (exitEdge.x - entryEdge.x) * t,
+        y: entryEdge.y + (exitEdge.y - entryEdge.y) * t
+      });
+    }
+
+    const cornerX = (entryDir === 'E' || entryDir === 'W') ? entryCenter.x : exitCenter.x;
+    const cornerY = (entryDir === 'N' || entryDir === 'S') ? entryCenter.y : exitCenter.y;
+    const controlPoint = { x: cornerX, y: cornerY };
+
+    return (t: number) => {
+      const adjustedControl = {
+        x: entryEdge.x + (controlPoint.x - entryEdge.x) + (exitEdge.x - controlPoint.x) * this.visualConfig.curveStrength,
+        y: entryEdge.y + (controlPoint.y - entryEdge.y) + (exitEdge.y - controlPoint.y) * this.visualConfig.curveStrength
+      };
+
+      const mt = 1 - t;
+      const mt2 = mt * mt;
+      const t2 = t * t;
+
+      return {
+        x: mt2 * entryEdge.x + 2 * mt * t * adjustedControl.x + t2 * exitEdge.x,
+        y: mt2 * entryEdge.y + 2 * mt * t * adjustedControl.y + t2 * exitEdge.y
+      };
+    };
   }
 
   private drawWaterFlow(
@@ -102,119 +176,29 @@ export class GridRenderer {
     cell: Cell,
     fillAmount: number,
     entryDir: Direction,
-    center: number,
-    halfPipe: number,
+    _center: number,
+    _halfPipe: number,
     pipeWidth: number
   ): void {
-    if (!cell.pipe) return;
-
-    const waterColor = 0x00ccff;
+    if (!cell.pipe || fillAmount <= 0) return;
     const exitDir = cell.pipe.getExitDirection(entryDir);
+    const pathFunc = this.getPathFunction(entryDir, exitDir);
+    const maxT = Math.min(1, fillAmount);
+    const numPoints = Math.max(2, Math.floor(this.visualConfig.samples * maxT));
 
-    const getSegmentLength = (direction: Direction, isEntry: boolean): number => {
-      switch (direction) {
-        case 'N':
-          return isEntry ? (center + halfPipe) : (center - halfPipe);
-        case 'S':
-          return isEntry ? (this.cellSize - center + halfPipe) : (this.cellSize - center - halfPipe);
-        case 'E':
-          return isEntry ? (this.cellSize - center + halfPipe) : (this.cellSize - center - halfPipe);
-        case 'W':
-          return isEntry ? (center + halfPipe) : (center - halfPipe);
-        default:
-          return 0;
-      }
-    };
-
-    const entryLength = getSegmentLength(entryDir, true);
-    const exitLength = exitDir ? getSegmentLength(exitDir, false) : 0;
-    const totalLength = entryLength + exitLength;
-
-    const drawWaterSegment = (direction: Direction, progress: number, isEntry: boolean) => {
-      if (progress <= 0) return;
-      progress = Math.min(1, progress);
-
-      graphic.rect(0, 0, 1, 1);
-      graphic.fill(waterColor);
-
-      switch (direction) {
-        case 'N': {
-          if (isEntry) {
-            const startY = 0;
-            const endY = center + halfPipe;
-            const currentLength = (endY - startY) * progress;
-            graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
-          } else {
-            const startY = center - halfPipe;
-            const endY = 0;
-            const totalLength = startY - endY;
-            const currentLength = totalLength * progress;
-            graphic.rect(center - halfPipe, startY - currentLength, pipeWidth, currentLength);
-          }
-          break;
-        }
-        case 'S': {
-          if (isEntry) {
-            const startY = this.cellSize;
-            const endY = center - halfPipe;
-            const totalLength = startY - endY;
-            const currentLength = totalLength * progress;
-            graphic.rect(center - halfPipe, startY - currentLength, pipeWidth, currentLength);
-          } else {
-            const startY = center + halfPipe;
-            const endY = this.cellSize;
-            const currentLength = (endY - startY) * progress;
-            graphic.rect(center - halfPipe, startY, pipeWidth, currentLength);
-          }
-          break;
-        }
-        case 'E': {
-          if (isEntry) {
-            const startX = this.cellSize;
-            const endX = center - halfPipe;
-            const totalLength = startX - endX;
-            const currentLength = totalLength * progress;
-            graphic.rect(startX - currentLength, center - halfPipe, currentLength, pipeWidth);
-          } else {
-            const startX = center + halfPipe;
-            const endX = this.cellSize;
-            const currentLength = (endX - startX) * progress;
-            graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
-          }
-          break;
-        }
-        case 'W': {
-          if (isEntry) {
-            const startX = 0;
-            const endX = center + halfPipe;
-            const currentLength = (endX - startX) * progress;
-            graphic.rect(startX, center - halfPipe, currentLength, pipeWidth);
-          } else {
-            const startX = center - halfPipe;
-            const endX = 0;
-            const totalLength = startX - endX;
-            const currentLength = totalLength * progress;
-            graphic.rect(startX - currentLength, center - halfPipe, currentLength, pipeWidth);
-          }
-          break;
-        }
-      }
-      graphic.fill(waterColor);
-    };
-
-    const entryRatio = entryLength / totalLength;
-    const exitRatio = exitLength / totalLength;
-
-    if (fillAmount <= entryRatio) {
-      const entryProgress = fillAmount / entryRatio;
-      drawWaterSegment(entryDir, entryProgress, true);
-    } else {
-      drawWaterSegment(entryDir, 1, true);
-      if (exitDir) {
-        const exitProgress = (fillAmount - entryRatio) / exitRatio;
-        drawWaterSegment(exitDir, exitProgress, false);
-      }
+    const points: { x: number; y: number }[] = [];
+    for (let i = 0; i < numPoints; i++) {
+      const t = (i / (numPoints - 1)) * maxT;
+      points.push(pathFunc(t));
     }
+
+    if (points.length < 2) return;
+
+    graphic.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      graphic.lineTo(points[i].x, points[i].y);
+    }
+    graphic.stroke({ width: pipeWidth, color: this.visualConfig.waterColor, cap: 'round', join: 'round' });
   }
 
   updateCell(row: number, col: number): void {
@@ -225,7 +209,10 @@ export class GridRenderer {
   }
 
   clear(): void {
-    this.cellGraphics.forEach((graphic) => graphic.destroy());
+    this.cellGraphics.forEach((entry) => {
+      entry.bg.destroy();
+      entry.fg.destroy();
+    });
     this.cellGraphics.clear();
   }
 }

@@ -17,8 +17,3 @@ pipes:
     weight: 1
   - type: cross
     weight: 0.5
-
-visual:
-  cellSize: 64
-  gridPadding: 10
-  queueSize: 5

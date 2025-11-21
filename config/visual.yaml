@@ -1,0 +1,11 @@
+cellSize: 128
+gridPadding: 10
+queueSize: 5
+curveStrength: 0.2
+waterColor: 0x00ccff
+borderColor: 0x555555
+blockedColor: 0x444444
+startColor: 0x00ccff
+pipeEmptyColor: 0xcccccc
+samples: 50
+pipeWidthRatio: 0.2

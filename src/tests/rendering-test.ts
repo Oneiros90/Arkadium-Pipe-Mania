@@ -3,6 +3,8 @@ import { Grid } from '@/core/Grid';
 import { Pipe } from '@/core/Pipe';
 import { CellType, Direction } from '@/core/types';
 import { GridRenderer } from '@/rendering/GridRenderer';
+import { ConfigLoader } from '@/config/ConfigLoader';
+import { VisualConfig } from '@/config/schemas';
 
 interface TestPipeConfig {
   pipe: Pipe;
@@ -14,23 +16,24 @@ class TestGrid {
   private app: Application;
   private container: Container;
   private grid: Grid;
-  private renderer: GridRenderer;
+  private renderer!: GridRenderer;
   private cellSize = 80;
   private testConfigs: TestPipeConfig[] = [];
   private animationPhase = 0;
   private tooltip: HTMLDivElement;
   private cols = 6;
   private flowSpeed = 0.3;
+  private visualConfig!: VisualConfig;
 
   constructor(private rootElement: HTMLElement) {
     this.app = new Application();
     this.container = new Container();
     this.grid = new Grid(0, 0);
-    this.renderer = new GridRenderer(this.container, this.grid, this.cellSize);
     this.tooltip = this.createTooltip();
   }
 
   async initialize(): Promise<void> {
+    this.visualConfig = await ConfigLoader.loadVisualConfig('/config/visual.yaml');
     this.setupTestConfigs();
     
     const rows = Math.ceil(this.testConfigs.length / this.cols);
@@ -58,7 +61,7 @@ class TestGrid {
     bg.fill(0x2a2a2a);
     this.container.addChild(bg);
 
-    this.renderer = new GridRenderer(this.container, this.grid, this.cellSize);
+    this.renderer = new GridRenderer(this.container, this.grid, this.visualConfig);
 
     this.populateTestGrid(this.cols);
     this.renderer.initialize();

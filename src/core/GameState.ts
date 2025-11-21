@@ -1,7 +1,7 @@
 import { Grid } from '@/core/Grid';
 import { Pipe } from '@/core/Pipe';
 import { Position } from '@/core/types';
-import { GameConfig } from '@/config/schemas';
+import { GameConfig, VisualConfig } from '@/config/schemas';
 import { Random } from '@/utils/Random';
 import { GridInitializer } from '@/systems/GridInitializer';
 import { PipeFactory } from '@/systems/PipeFactory';
@@ -33,6 +33,7 @@ export class GameState {
 
   constructor(
     private config: GameConfig,
+    private visualConfig: VisualConfig,
     private onCellUpdate: (row: number, col: number) => void,
     private onQueueUpdate: (queue: Pipe[]) => void,
     private onGameEnd: (won: boolean, pathLength: number, requiredLength: number) => void
@@ -74,7 +75,7 @@ export class GameState {
 
   private fillPipeQueue(): void {
     this.pipeQueue = [];
-    for (let i = 0; i < this.config.visual.queueSize; i++) {
+    for (let i = 0; i < this.visualConfig.queueSize; i++) {
       this.pipeQueue.push(this.pipeFactory.createRandomPipe());
     }
     this.onQueueUpdate(this.pipeQueue);
