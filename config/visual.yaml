@@ -1,11 +1,20 @@
-cellSize: 128
-gridPadding: 10
-queueSize: 5
-curveStrength: 0.2
-waterColor: 0x00ccff
-borderColor: 0x555555
-blockedColor: 0x444444
-startColor: 0x00ccff
-pipeEmptyColor: 0xcccccc
-samples: 50
-pipeWidthRatio: 0.2
+assets:
+  backgrounds:
+    empty: /assets/backgrounds/empty.svg
+    blocked: /assets/backgrounds/blocked.svg
+    start: /assets/backgrounds/start.svg
+  pipes:
+    straight: /assets/pipes/straight.svg
+    curved: /assets/pipes/curved.svg
+    cross: /assets/pipes/cross.svg
+
+grid:
+  cellSize: 64
+  padding: 10
+  queueSize: 5
+
+water:
+  color: 0x00ccff
+  samples: 50
+  widthRatio: 0.3
+  curveStrength: 0.2

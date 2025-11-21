@@ -1,4 +1,5 @@
-import { Application, Graphics, Container } from 'pixi.js';
+import { Application, Graphics, Container, Assets, Rectangle } from 'pixi.js';
+import { logger } from '@/utils/Logger';
 import { GameConfig, VisualConfig } from '@/config/schemas';
 
 export class GameRenderer {
@@ -19,8 +20,19 @@ export class GameRenderer {
   }
 
   async initialize(): Promise<void> {
-    const gridWidth = this.config.grid.width * this.visualConfig.cellSize + this.visualConfig.gridPadding * 2;
-    const gridHeight = this.config.grid.height * this.visualConfig.cellSize + this.visualConfig.gridPadding * 2;
+    // Preload assets
+    const assets = [
+      this.visualConfig.assets.backgrounds.empty,
+      this.visualConfig.assets.backgrounds.blocked,
+      this.visualConfig.assets.backgrounds.start,
+      this.visualConfig.assets.pipes.straight,
+      this.visualConfig.assets.pipes.curved,
+      this.visualConfig.assets.pipes.cross
+    ];
+    await Assets.load(assets);
+
+    const gridWidth = this.config.grid.width * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
+    const gridHeight = this.config.grid.height * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
     const queueWidth = 200;
     const totalWidth = gridWidth + queueWidth + 20;
 
@@ -28,22 +40,28 @@ export class GameRenderer {
       width: totalWidth,
       height: gridHeight,
       backgroundColor: 0x1a1a1a,
-      antialias: true
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+      autoDensity: true
     });
 
     this.container.appendChild(this.app.canvas);
 
-    this.gridContainer.x = this.visualConfig.gridPadding;
-    this.gridContainer.y = this.visualConfig.gridPadding;
+    this.gridContainer.x = this.visualConfig.grid.padding;
+    this.gridContainer.y = this.visualConfig.grid.padding;
 
     this.queueContainer.x = gridWidth + 20;
-    this.queueContainer.y = this.visualConfig.gridPadding;
+    this.queueContainer.y = this.visualConfig.grid.padding;
 
     this.app.stage.addChild(this.gridContainer);
     this.app.stage.addChild(this.queueContainer);
     this.app.stage.addChild(this.uiContainer);
 
     this.drawGridBackground();
+
+    // Ensure grid container captures clicks
+    this.gridContainer.hitArea = new Rectangle(0, 0, gridWidth, gridHeight);
+    logger.info('GameRenderer', 'Grid container initialized with hitArea', { width: gridWidth, height: gridHeight });
   }
 
   private drawGridBackground(): void {
@@ -51,8 +69,8 @@ export class GameRenderer {
     bg.rect(
       0,
       0,
-      this.config.grid.width * this.visualConfig.cellSize,
-      this.config.grid.height * this.visualConfig.cellSize
+      this.config.grid.width * this.visualConfig.grid.cellSize,
+      this.config.grid.height * this.visualConfig.grid.cellSize
     );
     bg.fill(0x2a2a2a);
     this.gridContainer.addChild(bg);
@@ -71,7 +89,7 @@ export class GameRenderer {
   }
 
   getCellSize(): number {
-    return this.visualConfig.cellSize;
+    return this.visualConfig.grid.cellSize;
   }
 
   destroy(): void {

@@ -23,7 +23,7 @@ export class GameState {
   private gridInitializer: GridInitializer;
   private pathValidator: PathValidator;
   private flowSystem: FlowSystem;
-  
+
   private phase: GamePhase = GamePhase.Setup;
   private startPosition!: Position;
   private pipeQueue: Pipe[] = [];
@@ -62,11 +62,11 @@ export class GameState {
       this.config.gameplay.minPathLength.min,
       this.config.gameplay.minPathLength.max
     );
-    
+
     this.fillPipeQueue();
     this.phase = GamePhase.Placement;
     this.notifyGridUpdate();
-    
+
     logger.info('GameState', 'Game started', {
       startPosition: this.startPosition,
       requiredPathLength: this.requiredPathLength
@@ -75,7 +75,7 @@ export class GameState {
 
   private fillPipeQueue(): void {
     this.pipeQueue = [];
-    for (let i = 0; i < this.visualConfig.queueSize; i++) {
+    for (let i = 0; i < this.visualConfig.grid.queueSize; i++) {
       this.pipeQueue.push(this.pipeFactory.createRandomPipe());
     }
     this.onQueueUpdate(this.pipeQueue);
@@ -107,7 +107,7 @@ export class GameState {
 
     const position: Position = { row, col };
     const cell = this.grid.getCell(position);
-    
+
     if (!cell || !cell.canPlacePipe()) {
       return;
     }
@@ -119,7 +119,7 @@ export class GameState {
 
     this.grid.placePipe(position, pipe);
     this.onCellUpdate(row, col);
-    
+
     this.pipeQueue.push(this.pipeFactory.createRandomPipe());
     this.onQueueUpdate(this.pipeQueue);
 

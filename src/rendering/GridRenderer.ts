@@ -1,19 +1,33 @@
-import { Graphics, Container } from 'pixi.js';
+import { Graphics, Container, Sprite, Texture } from 'pixi.js';
 import { Grid } from '@/core/Grid';
 import { Cell } from '@/core/Cell';
 import { CellType, Direction } from '@/core/types';
 import { VisualConfig } from '@/config/schemas';
+import { logger } from '@/utils/Logger';
 
 export class GridRenderer {
-  private cellGraphics: Map<string, { bg: Graphics; fg: Graphics }> = new Map();
+  private cellGraphics: Map<string, { bg: Sprite; pipe?: Sprite; water: Graphics }> = new Map();
+
+  private bgLayer: Container;
+  private waterLayer: Container;
+  private pipeLayer: Container;
 
   constructor(
     private container: Container,
     private grid: Grid,
     private visualConfig: VisualConfig
-  ) {}
+  ) {
+    this.bgLayer = new Container();
+    this.waterLayer = new Container();
+    this.pipeLayer = new Container();
+
+    this.container.addChild(this.bgLayer);
+    this.container.addChild(this.waterLayer);
+    this.container.addChild(this.pipeLayer);
+  }
 
   initialize(): void {
+    logger.info('GridRenderer', 'Initializing grid rendering');
     this.grid.forEachCell((cell) => {
       this.drawCell(cell);
     });
@@ -28,86 +42,107 @@ export class GridRenderer {
     let entry = this.cellGraphics.get(key);
 
     if (!entry) {
-      const bg = new Graphics();
-      const fg = new Graphics();
-      bg.x = fg.x = cell.position.col * this.visualConfig.cellSize;
-      bg.y = fg.y = cell.position.row * this.visualConfig.cellSize;
-      this.container.addChild(bg);
-      this.container.addChild(fg);
-      entry = { bg, fg };
+      const bg = new Sprite();
+      const water = new Graphics();
+      // Pipe sprite is created on demand
+
+      bg.x = cell.position.col * this.visualConfig.grid.cellSize;
+      bg.y = cell.position.row * this.visualConfig.grid.cellSize;
+
+      // Water shares position logic but is a Graphics object, so we draw at absolute coordinates or move it
+      // Easier to move the graphics object itself
+      water.x = bg.x;
+      water.y = bg.y;
+
+      this.bgLayer.addChild(bg);
+      this.waterLayer.addChild(water);
+
+      entry = { bg, water };
       this.cellGraphics.set(key, entry);
     }
 
-    const { bg, fg } = entry;
+    // entry is guaranteed to exist here because we just set it if it was missing
+    // However, TypeScript doesn't know that Map.get() returns the same object we just set
+    // So we cast it or re-get it, but re-getting is inefficient.
+    // Let's just use the local variables if we created a new entry, or cast entry.
 
-    bg.clear();
-    fg.clear();
+    const { bg, water } = entry!;
+
+    // Reset background
+    bg.width = this.visualConfig.grid.cellSize;
+    bg.height = this.visualConfig.grid.cellSize;
+
+    // Clear foreground container (except water graphics which we reuse)
+    if (entry!.pipe) {
+      entry!.pipe.destroy();
+      entry!.pipe = undefined;
+    }
+    water.clear();
 
     switch (cell.type) {
       case CellType.Empty:
-        bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
-        bg.stroke({ width: 1, color: this.visualConfig.borderColor });
+        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.empty);
         break;
       case CellType.Blocked:
-        bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
-        bg.fill(this.visualConfig.blockedColor);
+        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.blocked);
         break;
       case CellType.Start:
-        bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
-        bg.fill(this.visualConfig.startColor);
+        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.start);
         break;
       case CellType.Pipe:
-        this.drawPipeCell(bg, fg, cell);
+        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.empty);
+        this.drawPipeCell(entry!, cell);
         break;
     }
   }
 
-  private drawPipeCell(bg: Graphics, fg: Graphics, cell: Cell): void {
-    bg.rect(0, 0, this.visualConfig.cellSize, this.visualConfig.cellSize);
-    bg.stroke({ width: 1, color: this.visualConfig.borderColor });
-
+  private drawPipeCell(entry: { bg: Sprite; pipe?: Sprite; water: Graphics }, cell: Cell): void {
     if (!cell.pipe) return;
 
-    const center = this.visualConfig.cellSize / 2;
-    const pipeWidth = this.visualConfig.cellSize * this.visualConfig.pipeWidthRatio;
+    let texturePath = '';
+    switch (cell.pipe.type) {
+      case 'straight':
+        texturePath = this.visualConfig.assets.pipes.straight;
+        break;
+      case 'curved':
+        texturePath = this.visualConfig.assets.pipes.curved;
+        break;
+      case 'cross':
+        texturePath = this.visualConfig.assets.pipes.cross;
+        break;
+    }
+
+    const pipeSprite = Sprite.from(texturePath);
+    pipeSprite.width = this.visualConfig.grid.cellSize;
+    pipeSprite.height = this.visualConfig.grid.cellSize;
+
+    // Pivot at center for rotation
+    pipeSprite.anchor.set(0.5);
+    pipeSprite.x = cell.position.col * this.visualConfig.grid.cellSize + this.visualConfig.grid.cellSize / 2;
+    pipeSprite.y = cell.position.row * this.visualConfig.grid.cellSize + this.visualConfig.grid.cellSize / 2;
+    pipeSprite.angle = cell.pipe.rotation;
+
+    this.pipeLayer.addChild(pipeSprite);
+    entry.pipe = pipeSprite;
+
+    const center = this.visualConfig.grid.cellSize / 2;
+    const pipeWidth = this.visualConfig.grid.cellSize * this.visualConfig.water.widthRatio;
     const halfPipe = pipeWidth / 2;
 
-    const connections = cell.pipe.getActiveConnections();
-
-    connections.forEach((direction) => {
-      const emptyColor = this.visualConfig.pipeEmptyColor;
-
-      switch (direction) {
-        case 'N':
-          fg.rect(center - halfPipe, 0, pipeWidth, center + halfPipe);
-          break;
-        case 'S':
-          fg.rect(center - halfPipe, center - halfPipe, pipeWidth, center + halfPipe);
-          break;
-        case 'E':
-          fg.rect(center - halfPipe, center - halfPipe, center + halfPipe, pipeWidth);
-          break;
-        case 'W':
-          fg.rect(0, center - halfPipe, center + halfPipe, pipeWidth);
-          break;
-      }
-      fg.fill(emptyColor);
-    });
-
     cell.waterFlows.forEach(flow => {
-      this.drawWaterFlow(fg, cell, flow.level, flow.entryDirection, center, halfPipe, pipeWidth);
+      this.drawWaterFlow(entry.water, cell, flow.level, flow.entryDirection, center, halfPipe, pipeWidth);
     });
   }
 
   private getPathFunction(entryDir: Direction, exitDir: Direction | null): (t: number) => { x: number; y: number } {
-    const center = this.visualConfig.cellSize / 2;
-    const halfPipe = (this.visualConfig.cellSize * this.visualConfig.pipeWidthRatio) / 2;
+    const center = this.visualConfig.grid.cellSize / 2;
+    const halfPipe = (this.visualConfig.grid.cellSize * this.visualConfig.water.widthRatio) / 2;
 
     const getEdgePoint = (dir: Direction): { x: number; y: number } => {
       switch (dir) {
         case 'N': return { x: center, y: 0 };
-        case 'S': return { x: center, y: this.visualConfig.cellSize };
-        case 'E': return { x: this.visualConfig.cellSize, y: center };
+        case 'S': return { x: center, y: this.visualConfig.grid.cellSize };
+        case 'E': return { x: this.visualConfig.grid.cellSize, y: center };
         case 'W': return { x: 0, y: center };
         default: return { x: center, y: center };
       }
@@ -150,23 +185,67 @@ export class GridRenderer {
       });
     }
 
-    const cornerX = (entryDir === 'E' || entryDir === 'W') ? entryCenter.x : exitCenter.x;
-    const cornerY = (entryDir === 'N' || entryDir === 'S') ? entryCenter.y : exitCenter.y;
-    const controlPoint = { x: cornerX, y: cornerY };
+    // Circular Arc Logic for Curves
+    // Determine the corner around which we are turning
+    // NE: Top-Right corner (cellSize, 0)
+    // ES: Bottom-Right corner (cellSize, cellSize)
+    // SW: Bottom-Left corner (0, cellSize)
+    // WN: Top-Left corner (0, 0)
+
+    let arcCenter = { x: 0, y: 0 };
+    let startAngle = 0;
+    let endAngle = 0;
+    let clockwise = false;
+    const radius = this.visualConfig.grid.cellSize / 2;
+
+    // Map directions to angles (radians)
+    // 0 is Right, PI/2 is Down, PI is Left, 3PI/2 is Up
+
+    if ((entryDir === 'N' && exitDir === 'E') || (entryDir === 'E' && exitDir === 'N')) {
+      arcCenter = { x: this.visualConfig.grid.cellSize, y: 0 };
+      // N->E: Start at Top (PI), End at Right (PI/2). Clockwise? No.
+      // Top relative to (100,0) is (-50, 0) -> PI.
+      // Right relative to (100,0) is (0, 50) -> PI/2.
+      // N->E: PI -> PI/2. Counter-Clockwise.
+      // E->N: PI/2 -> PI. Clockwise.
+      if (entryDir === 'N') { startAngle = Math.PI; endAngle = Math.PI / 2; clockwise = true; } // Wait, PI to PI/2 is -90 deg. Clockwise? Yes.
+      else { startAngle = Math.PI / 2; endAngle = Math.PI; clockwise = false; }
+    } else if ((entryDir === 'E' && exitDir === 'S') || (entryDir === 'S' && exitDir === 'E')) {
+      arcCenter = { x: this.visualConfig.grid.cellSize, y: this.visualConfig.grid.cellSize };
+      // E->S: Right (3PI/2 or -PI/2) -> Bottom (PI).
+      // Right relative to (100,100) is (0, -50) -> -PI/2 (3PI/2).
+      // Bottom relative to (100,100) is (-50, 0) -> PI.
+      // E->S: 3PI/2 -> PI. Counter-Clockwise (270 -> 180).
+      if (entryDir === 'E') { startAngle = 3 * Math.PI / 2; endAngle = Math.PI; clockwise = true; }
+      else { startAngle = Math.PI; endAngle = 3 * Math.PI / 2; clockwise = false; }
+    } else if ((entryDir === 'S' && exitDir === 'W') || (entryDir === 'W' && exitDir === 'S')) {
+      arcCenter = { x: 0, y: this.visualConfig.grid.cellSize };
+      // S->W: Bottom (0) -> Left (3PI/2 or -PI/2).
+      // Bottom relative to (0,100) is (50, 0) -> 0.
+      // Left relative to (0,100) is (0, -50) -> -PI/2.
+      // S->W: 0 -> -PI/2. Counter-Clockwise.
+      if (entryDir === 'S') { startAngle = 0; endAngle = -Math.PI / 2; clockwise = true; }
+      else { startAngle = -Math.PI / 2; endAngle = 0; clockwise = false; }
+    } else if ((entryDir === 'W' && exitDir === 'N') || (entryDir === 'N' && exitDir === 'W')) {
+      arcCenter = { x: 0, y: 0 };
+      // W->N: Left (PI/2) -> Top (0).
+      // Left relative to (0,0) is (0, 50) -> PI/2.
+      // Top relative to (0,0) is (50, 0) -> 0.
+      // W->N: PI/2 -> 0. Counter-Clockwise.
+      if (entryDir === 'W') { startAngle = Math.PI / 2; endAngle = 0; clockwise = true; }
+      else { startAngle = 0; endAngle = Math.PI / 2; clockwise = false; }
+    }
 
     return (t: number) => {
-      const adjustedControl = {
-        x: entryEdge.x + (controlPoint.x - entryEdge.x) + (exitEdge.x - controlPoint.x) * this.visualConfig.curveStrength,
-        y: entryEdge.y + (controlPoint.y - entryEdge.y) + (exitEdge.y - controlPoint.y) * this.visualConfig.curveStrength
-      };
+      // Interpolate angle
+      // If clockwise, we subtract. If counter-clockwise, we add?
+      // Wait, let's just use simple linear interpolation and handle the wrap-around if needed.
+      // But here angles are within reasonable ranges.
 
-      const mt = 1 - t;
-      const mt2 = mt * mt;
-      const t2 = t * t;
-
+      const currentAngle = startAngle + (endAngle - startAngle) * t;
       return {
-        x: mt2 * entryEdge.x + 2 * mt * t * adjustedControl.x + t2 * exitEdge.x,
-        y: mt2 * entryEdge.y + 2 * mt * t * adjustedControl.y + t2 * exitEdge.y
+        x: arcCenter.x + radius * Math.cos(currentAngle),
+        y: arcCenter.y + radius * Math.sin(currentAngle)
       };
     };
   }
@@ -184,7 +263,7 @@ export class GridRenderer {
     const exitDir = cell.pipe.getExitDirection(entryDir);
     const pathFunc = this.getPathFunction(entryDir, exitDir);
     const maxT = Math.min(1, fillAmount);
-    const numPoints = Math.max(2, Math.floor(this.visualConfig.samples * maxT));
+    const numPoints = Math.max(2, Math.floor(this.visualConfig.water.samples * maxT));
 
     const points: { x: number; y: number }[] = [];
     for (let i = 0; i < numPoints; i++) {
@@ -198,7 +277,7 @@ export class GridRenderer {
     for (let i = 1; i < points.length; i++) {
       graphic.lineTo(points[i].x, points[i].y);
     }
-    graphic.stroke({ width: pipeWidth, color: this.visualConfig.waterColor, cap: 'round', join: 'round' });
+    graphic.stroke({ width: pipeWidth, color: this.visualConfig.water.color, cap: 'round', join: 'round' });
   }
 
   updateCell(row: number, col: number): void {
@@ -211,7 +290,8 @@ export class GridRenderer {
   clear(): void {
     this.cellGraphics.forEach((entry) => {
       entry.bg.destroy();
-      entry.fg.destroy();
+      entry.water.destroy();
+      if (entry.pipe) entry.pipe.destroy();
     });
     this.cellGraphics.clear();
   }

@@ -1,12 +1,14 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle, Sprite } from 'pixi.js';
 import { Pipe } from '@/core/Pipe';
+import { VisualConfig } from '@/config/schemas';
+import { logger } from '@/utils/Logger';
 
 export class QueueRenderer {
-  private queueGraphics: Graphics[] = [];
+  private queueGraphics: Container[] = [];
 
   constructor(
     private container: Container,
-    private cellSize: number
+    private visualConfig: VisualConfig
   ) {
     const title = new Text({
       text: 'Next Pipes',
@@ -22,52 +24,51 @@ export class QueueRenderer {
 
   render(queue: Pipe[]): void {
     this.clear();
+    logger.info('QueueRenderer', `Rendering queue with ${queue.length} pipes`);
 
     queue.forEach((pipe, index) => {
-      const graphic = new Graphics();
-      graphic.y = index * (this.cellSize + 10);
-      
-      const padding = 2;
-      const size = this.cellSize - padding * 2;
-      
-      graphic.rect(padding, padding, size, size);
-      graphic.stroke({ width: 1, color: 0x555555 });
+      const graphic = new Container();
+      graphic.y = index * (this.visualConfig.grid.cellSize + 10);
 
-      this.drawPipe(graphic, pipe, this.cellSize);
-      
+      const padding = 2;
+      const size = this.visualConfig.grid.cellSize - padding * 2;
+
+      const bg = new Graphics();
+      bg.rect(padding, padding, size, size);
+      bg.stroke({ width: 1, color: 0x555555 });
+      graphic.addChild(bg);
+
+      this.drawPipe(graphic, pipe);
+
       this.container.addChild(graphic);
       this.queueGraphics.push(graphic);
     });
   }
 
-  private drawPipe(graphic: Graphics, pipe: Pipe, cellSize: number): void {
-    const color = 0xcccccc;
-    const center = cellSize / 2;
-    const pipeWidth = cellSize * 0.2;
-    const halfPipe = pipeWidth / 2;
+  private drawPipe(container: Container, pipe: Pipe): void {
+    let texturePath = '';
+    switch (pipe.type) {
+      case 'straight':
+        texturePath = this.visualConfig.assets.pipes.straight;
+        break;
+      case 'curved':
+        texturePath = this.visualConfig.assets.pipes.curved;
+        break;
+      case 'cross':
+        texturePath = this.visualConfig.assets.pipes.cross;
+        break;
+    }
 
-    const connections = pipe.getActiveConnections();
+    const pipeSprite = Sprite.from(texturePath);
+    pipeSprite.width = this.visualConfig.grid.cellSize;
+    pipeSprite.height = this.visualConfig.grid.cellSize;
 
-    connections.forEach((direction) => {
-      graphic.rect(0, 0, 1, 1);
-      graphic.fill(color);
+    pipeSprite.anchor.set(0.5);
+    pipeSprite.x = this.visualConfig.grid.cellSize / 2;
+    pipeSprite.y = this.visualConfig.grid.cellSize / 2;
+    pipeSprite.angle = pipe.rotation;
 
-      switch (direction) {
-        case 'N':
-          graphic.rect(center - halfPipe, 0, pipeWidth, center + halfPipe);
-          break;
-        case 'S':
-          graphic.rect(center - halfPipe, center - halfPipe, pipeWidth, center + halfPipe);
-          break;
-        case 'E':
-          graphic.rect(center - halfPipe, center - halfPipe, center + halfPipe, pipeWidth);
-          break;
-        case 'W':
-          graphic.rect(0, center - halfPipe, center + halfPipe, pipeWidth);
-          break;
-      }
-      graphic.fill(color);
-    });
+    container.addChild(pipeSprite);
   }
 
   clear(): void {

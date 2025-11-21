@@ -18,7 +18,7 @@ class Game {
 
     const config = await ConfigLoader.loadFromFile('/config/game.yaml');
     const visualConfig = await ConfigLoader.loadVisualConfig('/config/visual.yaml');
-    
+
     const container = document.getElementById('game-container');
     if (!container) {
       throw new Error('Game container not found');
@@ -43,7 +43,7 @@ class Game {
 
     this.queueRenderer = new QueueRenderer(
       this.gameRenderer.getQueueContainer(),
-      this.gameRenderer.getCellSize()
+      visualConfig
     );
 
     this.setupClickHandler();
@@ -59,7 +59,7 @@ class Game {
   private setupClickHandler(): void {
     const gridContainer = this.gameRenderer.getGridContainer();
     const cellSize = this.gameRenderer.getCellSize();
-    
+
     gridContainer.eventMode = 'static';
     gridContainer.on('pointerdown', (event) => {
       const localPos = event.getLocalPosition(gridContainer);
@@ -74,6 +74,7 @@ class Game {
   }
 
   private handleQueueUpdate(queue: any[]): void {
+    logger.info('Game', 'Queue update received', { length: queue.length });
     this.queueRenderer.render(queue);
   }
 

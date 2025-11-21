@@ -6,17 +6,29 @@ export const PipeConfigSchema = z.object({
 });
 
 export const VisualConfigSchema = z.object({
-  cellSize: z.number().int().min(32).default(64),
-  gridPadding: z.number().int().min(0).default(10),
-  queueSize: z.number().int().min(3).default(5),
-  curveStrength: z.number().min(0).max(1).default(0.2),
-  waterColor: z.number().int().default(0x00ccff),
-  borderColor: z.number().int().default(0x555555),
-  blockedColor: z.number().int().default(0x444444),
-  startColor: z.number().int().default(0x00aaff),
-  pipeEmptyColor: z.number().int().default(0xcccccc),
-  samples: z.number().int().min(10).max(200).default(50),
-  pipeWidthRatio: z.number().min(0.1).max(0.5).default(0.1)
+  assets: z.object({
+    backgrounds: z.object({
+      empty: z.string().default('/assets/backgrounds/empty.svg'),
+      blocked: z.string().default('/assets/backgrounds/blocked.svg'),
+      start: z.string().default('/assets/backgrounds/start.svg')
+    }),
+    pipes: z.object({
+      straight: z.string().default('/assets/pipes/straight.svg'),
+      curved: z.string().default('/assets/pipes/curved.svg'),
+      cross: z.string().default('/assets/pipes/cross.svg')
+    })
+  }),
+  grid: z.object({
+    cellSize: z.number().int().min(32).default(64),
+    padding: z.number().int().min(0).default(10),
+    queueSize: z.number().int().min(3).default(5)
+  }),
+  water: z.object({
+    color: z.number().int().default(0x00ccff),
+    samples: z.number().int().min(10).max(200).default(50),
+    widthRatio: z.number().min(0.1).max(0.5).default(0.1),
+    curveStrength: z.number().min(0).max(1).default(0.2)
+  })
 });
 
 export const GameConfigSchema = z.object({
