@@ -1,4 +1,5 @@
 import { Assets, Texture } from 'pixi.js';
+import { VisualConfig } from '@/config/schemas';
 
 /**
  * Centralized asset manager for Pixi v8.
@@ -8,8 +9,40 @@ export class AssetManager {
     private textures: Map<string, Texture> = new Map();
 
     /**
-     * Load and prepare all assets upfront.
+     * Load and prepare all assets from VisualConfig.
      * In Pixi v8, Assets.load returns Textures directly.
+     */
+    async loadAssetsFromConfig(config: VisualConfig): Promise<void> {
+        const assets = this.extractAssetPaths(config);
+        await this.loadAssets(assets);
+    }
+
+    /**
+     * Extract all asset paths from VisualConfig.
+     */
+    private extractAssetPaths(config: VisualConfig): string[] {
+        const paths: string[] = [];
+
+        // Extract backgrounds
+        paths.push(
+            config.assets.backgrounds.empty,
+            config.assets.backgrounds.blocked,
+            config.assets.backgrounds.tank,
+            config.assets.backgrounds.connector
+        );
+
+        // Extract pipes
+        paths.push(
+            config.assets.pipes.straight,
+            config.assets.pipes.curved,
+            config.assets.pipes.cross
+        );
+
+        return paths;
+    }
+
+    /**
+     * Load specific asset paths.
      */
     async loadAssets(paths: string[]): Promise<void> {
         // Load all resources using Pixi's Assets manager

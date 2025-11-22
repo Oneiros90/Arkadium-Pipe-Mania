@@ -276,17 +276,53 @@ export class GridRenderer {
       else { startAngle = 0; endAngle = Math.PI / 2; }
     }
 
-    return (t: number) => {
-      // Interpolate angle
-      // If clockwise, we subtract. If counter-clockwise, we add?
-      // Wait, let's just use simple linear interpolation and handle the wrap-around if needed.
-      // But here angles are within reasonable ranges.
 
-      const currentAngle = startAngle + (endAngle - startAngle) * t;
-      return {
-        x: arcCenter.x + radius * Math.cos(currentAngle),
-        y: arcCenter.y + radius * Math.sin(currentAngle)
+    return (t: number) => {
+      const curveStrength = this.visualConfig.water.curveStrength;
+
+      // Scale radius based on curveStrength (0 = no curve, 1 = full curve)
+      const effectiveRadius = radius * curveStrength;
+
+      // Lerp arcCenter toward cell center as curveStrength decreases
+      const cellCenter = { x: this.visualConfig.grid.cellSize / 2, y: this.visualConfig.grid.cellSize / 2 };
+      const effectiveArcCenter = {
+        x: cellCenter.x + (arcCenter.x - cellCenter.x) * curveStrength,
+        y: cellCenter.y + (arcCenter.y - cellCenter.y) * curveStrength
       };
+
+      // Determine straight vs curved portions based on curveStrength
+      // With low curveStrength, more of the path is straight
+      const straightPortion = (1 - curveStrength) / 2;
+
+      if (t < straightPortion) {
+        // Entry straight portion - line from entry to arc start
+        const arcStartAngle = startAngle;
+        const arcStartX = effectiveArcCenter.x + effectiveRadius * Math.cos(arcStartAngle);
+        const arcStartY = effectiveArcCenter.y + effectiveRadius * Math.sin(arcStartAngle);
+        const progress = t / straightPortion;
+        return {
+          x: entryEdge.x + (arcStartX - entryEdge.x) * progress,
+          y: entryEdge.y + (arcStartY - entryEdge.y) * progress
+        };
+      } else if (t > 1 - straightPortion) {
+        // Exit straight portion - line from arc end to exit
+        const arcEndAngle = endAngle;
+        const arcEndX = effectiveArcCenter.x + effectiveRadius * Math.cos(arcEndAngle);
+        const arcEndY = effectiveArcCenter.y + effectiveRadius * Math.sin(arcEndAngle);
+        const progress = (t - (1 - straightPortion)) / straightPortion;
+        return {
+          x: arcEndX + (exitEdge.x - arcEndX) * progress,
+          y: arcEndY + (exitEdge.y - arcEndY) * progress
+        };
+      } else {
+        // Curved portion - arc between start and end angles
+        const curveProgress = (t - straightPortion) / curveStrength;
+        const currentAngle = startAngle + (endAngle - startAngle) * curveProgress;
+        return {
+          x: effectiveArcCenter.x + effectiveRadius * Math.cos(currentAngle),
+          y: effectiveArcCenter.y + effectiveRadius * Math.sin(currentAngle)
+        };
+      }
     };
   }
 

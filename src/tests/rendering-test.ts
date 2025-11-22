@@ -5,6 +5,7 @@ import { CellType, Direction } from '@/core/types';
 import { GridRenderer } from '@/rendering/GridRenderer';
 import { ConfigLoader } from '@/config/ConfigLoader';
 import { VisualConfig } from '@/config/schemas';
+import { AssetManager } from '@/rendering/AssetManager';
 
 interface TestPipeConfig {
   pipe: Pipe;
@@ -24,6 +25,7 @@ class TestGrid {
   private cols = 6;
   private flowSpeed = 0.3;
   private visualConfig!: VisualConfig;
+  private assetManager!: AssetManager;
 
   constructor(private rootElement: HTMLElement) {
     this.app = new Application();
@@ -34,10 +36,12 @@ class TestGrid {
 
   async initialize(): Promise<void> {
     this.visualConfig = await ConfigLoader.loadVisualConfig('/config/visual.yaml');
+    this.assetManager = new AssetManager();
+    await this.assetManager.loadAssetsFromConfig(this.visualConfig);
     this.setupTestConfigs();
-    
+
     const rows = Math.ceil(this.testConfigs.length / this.cols);
-    
+
     this.grid = new Grid(this.cols, rows);
 
     const width = this.cols * this.cellSize + 40;
@@ -61,7 +65,7 @@ class TestGrid {
     bg.fill(0x2a2a2a);
     this.container.addChild(bg);
 
-    this.renderer = new GridRenderer(this.container, this.grid, this.visualConfig);
+    this.renderer = new GridRenderer(this.container, this.grid, this.visualConfig, this.assetManager);
 
     this.populateTestGrid(this.cols);
     this.renderer.initialize();
@@ -80,15 +84,15 @@ class TestGrid {
 
   private setupMouseEvents(): void {
     const canvas = this.app.canvas;
-    
+
     canvas.addEventListener('mousemove', (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left - this.container.x;
       const y = e.clientY - rect.top - this.container.y;
-      
+
       const col = Math.floor(x / this.cellSize);
       const row = Math.floor(y / this.cellSize);
-      
+
       if (col >= 0 && col < this.cols && row >= 0 && row < Math.ceil(this.testConfigs.length / this.cols)) {
         const index = row * this.cols + col;
         if (index < this.testConfigs.length) {
@@ -104,7 +108,7 @@ class TestGrid {
         this.tooltip.style.display = 'none';
       }
     });
-    
+
     canvas.addEventListener('mouseleave', () => {
       this.tooltip.style.display = 'none';
     });
@@ -116,7 +120,7 @@ class TestGrid {
       { pipe: Pipe.createStraight(0), waterDirections: [Direction.South], label: 'Straight V (S->N)' },
       { pipe: Pipe.createStraight(90), waterDirections: [Direction.East], label: 'Straight H (E->W)' },
       { pipe: Pipe.createStraight(90), waterDirections: [Direction.West], label: 'Straight H (W->E)' },
-      
+
       { pipe: Pipe.createCurved(0), waterDirections: [Direction.North], label: 'Curved NE (N->E)' },
       { pipe: Pipe.createCurved(0), waterDirections: [Direction.East], label: 'Curved NE (E->N)' },
       { pipe: Pipe.createCurved(90), waterDirections: [Direction.East], label: 'Curved ES (E->S)' },
@@ -125,7 +129,7 @@ class TestGrid {
       { pipe: Pipe.createCurved(180), waterDirections: [Direction.West], label: 'Curved SW (W->S)' },
       { pipe: Pipe.createCurved(270), waterDirections: [Direction.West], label: 'Curved WN (W->N)' },
       { pipe: Pipe.createCurved(270), waterDirections: [Direction.North], label: 'Curved WN (N->W)' },
-      
+
       { pipe: Pipe.createCross(), waterDirections: [Direction.North], label: 'Cross 1st pass (N->S)' },
       { pipe: Pipe.createCross(), waterDirections: [Direction.South], label: 'Cross 1st pass (S->N)' },
       { pipe: Pipe.createCross(), waterDirections: [Direction.East], label: 'Cross 1st pass (E->W)' },
@@ -140,7 +144,7 @@ class TestGrid {
       const row = Math.floor(index / cols);
       const col = index % cols;
       const cell = this.grid.getCell({ row, col });
-      
+
       if (cell) {
         cell.type = CellType.Pipe;
         cell.pipe = config.pipe;
@@ -155,14 +159,14 @@ class TestGrid {
       const row = Math.floor(index / this.cols);
       const col = index % this.cols;
       const cell = this.grid.getCell({ row, col });
-      
+
       if (cell && cell.pipe) {
         const cyclePhase = this.animationPhase % config.waterDirections.length;
         config.waterDirections.forEach((dir, index) => {
           const flowPhase = Math.max(0, Math.min(1, cyclePhase - index));
           cell.setWaterLevel(flowPhase, dir);
         });
-        
+
         this.renderer.updateCell(row, col);
       }
     });

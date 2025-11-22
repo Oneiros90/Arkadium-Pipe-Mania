@@ -18,5 +18,5 @@ water:
   color: 0xdf0000
   samples: 50
   widthRatio: 0.2
-  curveStrength: 0.9
+  curveStrength: 0
   renderLayer: above

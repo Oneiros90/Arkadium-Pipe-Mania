@@ -24,16 +24,7 @@ export class GameRenderer {
 
   async initialize(): Promise<void> {
     // Preload assets using AssetManager
-    const assets = [
-      this.visualConfig.assets.backgrounds.empty,
-      this.visualConfig.assets.backgrounds.blocked,
-      this.visualConfig.assets.backgrounds.tank,
-      this.visualConfig.assets.backgrounds.connector,
-      this.visualConfig.assets.pipes.straight,
-      this.visualConfig.assets.pipes.curved,
-      this.visualConfig.assets.pipes.cross
-    ];
-    await this.assetManager.loadAssets(assets);
+    await this.assetManager.loadAssetsFromConfig(this.visualConfig);
 
     const gridWidth = this.config.grid.width * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
     const gridHeight = this.config.grid.height * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
