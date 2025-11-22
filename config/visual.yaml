@@ -1,12 +1,13 @@
 assets:
   backgrounds:
-    empty: /assets/backgrounds/empty.svg
-    blocked: /assets/backgrounds/blocked.svg
-    start: /assets/backgrounds/start.svg
+    empty: /assets/themes/original/empty.png
+    blocked: /assets/themes/original/blocked.png
+    tank: /assets/themes/original/start_tank.png
+    connector: /assets/themes/original/start_connector.png
   pipes:
-    straight: /assets/pipes/straight.svg
-    curved: /assets/pipes/curved.svg
-    cross: /assets/pipes/cross.svg
+    straight: /assets/themes/original/straight.png
+    curved: /assets/themes/original/curved.png
+    cross: /assets/themes/original/cross.png
 
 grid:
   cellSize: 64

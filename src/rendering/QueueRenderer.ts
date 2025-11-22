@@ -1,4 +1,5 @@
-import { Container, Graphics, Text, TextStyle, Sprite } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { createPixelArtSprite } from '@/utils/SpriteUtils';
 import { Pipe } from '@/core/Pipe';
 import { VisualConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
@@ -26,16 +27,30 @@ export class QueueRenderer {
     this.clear();
     logger.info('QueueRenderer', `Rendering queue with ${queue.length} pipes`);
 
+    // Render in reverse order visually: index 0 (next pipe) at the bottom
+    const totalHeight = (queue.length - 1) * (this.visualConfig.grid.cellSize + 10);
+
     queue.forEach((pipe, index) => {
       const graphic = new Container();
-      graphic.y = index * (this.visualConfig.grid.cellSize + 10);
+      // Position: index 0 is at totalHeight (bottom), last index is at 0 (top)
+      graphic.y = totalHeight - index * (this.visualConfig.grid.cellSize + 10);
 
       const padding = 2;
       const size = this.visualConfig.grid.cellSize - padding * 2;
 
       const bg = new Graphics();
-      bg.rect(padding, padding, size, size);
-      bg.stroke({ width: 1, color: 0x555555 });
+
+      // Highlight the next pipe (index 0)
+      if (index === 0) {
+        bg.rect(padding - 2, padding - 2, size + 4, size + 4);
+        bg.stroke({ width: 3, color: 0xffd700 }); // Gold highlight
+        bg.rect(padding, padding, size, size);
+        bg.fill({ color: 0x444444, alpha: 0.5 }); // Slightly lighter background
+      } else {
+        bg.rect(padding, padding, size, size);
+        bg.stroke({ width: 1, color: 0x555555 });
+      }
+
       graphic.addChild(bg);
 
       this.drawPipe(graphic, pipe);
@@ -59,15 +74,13 @@ export class QueueRenderer {
         break;
     }
 
-    const pipeSprite = Sprite.from(texturePath);
+    const pipeSprite = createPixelArtSprite(texturePath);
     pipeSprite.width = this.visualConfig.grid.cellSize;
     pipeSprite.height = this.visualConfig.grid.cellSize;
-
     pipeSprite.anchor.set(0.5);
     pipeSprite.x = this.visualConfig.grid.cellSize / 2;
     pipeSprite.y = this.visualConfig.grid.cellSize / 2;
     pipeSprite.angle = pipe.rotation;
-
     container.addChild(pipeSprite);
   }
 

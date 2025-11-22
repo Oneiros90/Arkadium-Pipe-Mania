@@ -24,7 +24,8 @@ export class GameRenderer {
     const assets = [
       this.visualConfig.assets.backgrounds.empty,
       this.visualConfig.assets.backgrounds.blocked,
-      this.visualConfig.assets.backgrounds.start,
+      this.visualConfig.assets.backgrounds.tank,
+      this.visualConfig.assets.backgrounds.connector,
       this.visualConfig.assets.pipes.straight,
       this.visualConfig.assets.pipes.curved,
       this.visualConfig.assets.pipes.cross

@@ -6,7 +6,7 @@
 - The objective is to deliver a complete and reliable gameplay loop, emphasizing core logic, performance, and clean, maintainable code.
 - Visual presentation is secondary — the focus is on engineering quality, structure, and extensibility.
 - You may use any framework or engine (e.g., PixiJS, Phaser, or a custom implementation) as long as the architecture remains clear and modular.
-- Example gameplay: Pipe Mania video
+- **Example gameplay:** [Pipe Mania video](https://www.youtube.com/watch?v=6Ve8MXuRr7Y&ab_channel=CzasNaRetro)
 
 ### 2. Evaluation Criteria
 

@@ -10,7 +10,8 @@ export const VisualConfigSchema = z.object({
     backgrounds: z.object({
       empty: z.string().default('/assets/backgrounds/empty.svg'),
       blocked: z.string().default('/assets/backgrounds/blocked.svg'),
-      start: z.string().default('/assets/backgrounds/start.svg')
+      tank: z.string().default('/assets/backgrounds/start_tank.svg'),
+      connector: z.string().default('/assets/backgrounds/start_connector.svg')
     }),
     pipes: z.object({
       straight: z.string().default('/assets/pipes/straight.svg'),

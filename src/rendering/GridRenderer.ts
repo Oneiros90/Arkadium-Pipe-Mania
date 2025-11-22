@@ -1,4 +1,5 @@
-import { Graphics, Container, Sprite, Texture } from 'pixi.js';
+import { Graphics, Container, Sprite } from 'pixi.js';
+import { createPixelArtSprite } from '@/utils/SpriteUtils';
 import { Grid } from '@/core/Grid';
 import { Cell } from '@/core/Cell';
 import { CellType, Direction } from '@/core/types';
@@ -42,7 +43,7 @@ export class GridRenderer {
     let entry = this.cellGraphics.get(key);
 
     if (!entry) {
-      const bg = new Sprite();
+      const bg = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty);
       const water = new Graphics();
       // Pipe sprite is created on demand
 
@@ -79,18 +80,49 @@ export class GridRenderer {
     }
     water.clear();
 
+    // Clear any children from bg (e.g., start cell connectors)
+    bg.removeChildren();
+
     switch (cell.type) {
       case CellType.Empty:
-        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.empty);
+        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty).texture;
         break;
       case CellType.Blocked:
-        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.blocked);
+        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.blocked).texture;
         break;
       case CellType.Start:
-        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.start);
+        // Set empty texture so sprite has proper dimensions
+        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty).texture;
+
+        // Add connectors first (they go below)
+        const { row, col } = cell.position;
+        const neighbors = [
+          { dir: 'N', valid: this.isValidNeighbor(row - 1, col), rotation: 0 },
+          { dir: 'E', valid: this.isValidNeighbor(row, col + 1), rotation: 90 },
+          { dir: 'S', valid: this.isValidNeighbor(row + 1, col), rotation: 180 },
+          { dir: 'W', valid: this.isValidNeighbor(row, col - 1), rotation: 270 }
+        ];
+
+        // Add tank on top (covers connector centers)
+        const tank = createPixelArtSprite(this.visualConfig.assets.backgrounds.tank);
+        bg.addChild(tank);
+        
+        neighbors.forEach(n => {
+          if (n.valid) {
+            const connector = createPixelArtSprite(this.visualConfig.assets.backgrounds.connector);
+            connector.anchor.set(0.5);
+            connector.angle = n.rotation;
+            // Calculate center based on parent scale
+            // bg.scale accounts for the actual texture resolution vs cellSize
+            const centerPos = this.visualConfig.grid.cellSize / bg.scale.x / 2;
+            connector.x = centerPos;
+            connector.y = centerPos;
+            bg.addChild(connector);
+          }
+        });
         break;
       case CellType.Pipe:
-        bg.texture = Texture.from(this.visualConfig.assets.backgrounds.empty);
+        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty).texture;
         this.drawPipeCell(entry!, cell);
         break;
     }
@@ -112,11 +144,10 @@ export class GridRenderer {
         break;
     }
 
-    const pipeSprite = Sprite.from(texturePath);
+    // Forza la texture in modalità pixel art anche se già in cache
+    const pipeSprite = createPixelArtSprite(texturePath);
     pipeSprite.width = this.visualConfig.grid.cellSize;
     pipeSprite.height = this.visualConfig.grid.cellSize;
-
-    // Pivot at center for rotation
     pipeSprite.anchor.set(0.5);
     pipeSprite.x = cell.position.col * this.visualConfig.grid.cellSize + this.visualConfig.grid.cellSize / 2;
     pipeSprite.y = cell.position.row * this.visualConfig.grid.cellSize + this.visualConfig.grid.cellSize / 2;
@@ -168,7 +199,6 @@ export class GridRenderer {
       });
     }
 
-    const exitCenter = getCenterPoint(exitDir);
     const exitEdge = getEdgePoint(exitDir);
 
     const isStraight = (
@@ -195,7 +225,7 @@ export class GridRenderer {
     let arcCenter = { x: 0, y: 0 };
     let startAngle = 0;
     let endAngle = 0;
-    let clockwise = false;
+    // let clockwise = false;
     const radius = this.visualConfig.grid.cellSize / 2;
 
     // Map directions to angles (radians)
@@ -208,32 +238,32 @@ export class GridRenderer {
       // Right relative to (100,0) is (0, 50) -> PI/2.
       // N->E: PI -> PI/2. Counter-Clockwise.
       // E->N: PI/2 -> PI. Clockwise.
-      if (entryDir === 'N') { startAngle = Math.PI; endAngle = Math.PI / 2; clockwise = true; } // Wait, PI to PI/2 is -90 deg. Clockwise? Yes.
-      else { startAngle = Math.PI / 2; endAngle = Math.PI; clockwise = false; }
+      if (entryDir === 'N') { startAngle = Math.PI; endAngle = Math.PI / 2; }
+      else { startAngle = Math.PI / 2; endAngle = Math.PI; }
     } else if ((entryDir === 'E' && exitDir === 'S') || (entryDir === 'S' && exitDir === 'E')) {
       arcCenter = { x: this.visualConfig.grid.cellSize, y: this.visualConfig.grid.cellSize };
       // E->S: Right (3PI/2 or -PI/2) -> Bottom (PI).
       // Right relative to (100,100) is (0, -50) -> -PI/2 (3PI/2).
       // Bottom relative to (100,100) is (-50, 0) -> PI.
       // E->S: 3PI/2 -> PI. Counter-Clockwise (270 -> 180).
-      if (entryDir === 'E') { startAngle = 3 * Math.PI / 2; endAngle = Math.PI; clockwise = true; }
-      else { startAngle = Math.PI; endAngle = 3 * Math.PI / 2; clockwise = false; }
+      if (entryDir === 'E') { startAngle = 3 * Math.PI / 2; endAngle = Math.PI; }
+      else { startAngle = Math.PI; endAngle = 3 * Math.PI / 2; }
     } else if ((entryDir === 'S' && exitDir === 'W') || (entryDir === 'W' && exitDir === 'S')) {
       arcCenter = { x: 0, y: this.visualConfig.grid.cellSize };
       // S->W: Bottom (0) -> Left (3PI/2 or -PI/2).
       // Bottom relative to (0,100) is (50, 0) -> 0.
       // Left relative to (0,100) is (0, -50) -> -PI/2.
       // S->W: 0 -> -PI/2. Counter-Clockwise.
-      if (entryDir === 'S') { startAngle = 0; endAngle = -Math.PI / 2; clockwise = true; }
-      else { startAngle = -Math.PI / 2; endAngle = 0; clockwise = false; }
+      if (entryDir === 'S') { startAngle = 0; endAngle = -Math.PI / 2; }
+      else { startAngle = -Math.PI / 2; endAngle = 0; }
     } else if ((entryDir === 'W' && exitDir === 'N') || (entryDir === 'N' && exitDir === 'W')) {
       arcCenter = { x: 0, y: 0 };
       // W->N: Left (PI/2) -> Top (0).
       // Left relative to (0,0) is (0, 50) -> PI/2.
       // Top relative to (0,0) is (50, 0) -> 0.
       // W->N: PI/2 -> 0. Counter-Clockwise.
-      if (entryDir === 'W') { startAngle = Math.PI / 2; endAngle = 0; clockwise = true; }
-      else { startAngle = 0; endAngle = Math.PI / 2; clockwise = false; }
+      if (entryDir === 'W') { startAngle = Math.PI / 2; endAngle = 0; }
+      else { startAngle = 0; endAngle = Math.PI / 2; }
     }
 
     return (t: number) => {
@@ -294,5 +324,12 @@ export class GridRenderer {
       if (entry.pipe) entry.pipe.destroy();
     });
     this.cellGraphics.clear();
+  }
+
+  private isValidNeighbor(row: number, col: number): boolean {
+    const neighbor = this.grid.getCell({ row, col });
+    if (!neighbor) return false; // Out of bounds
+    if (neighbor.type === CellType.Blocked) return false; // Blocked
+    return true;
   }
 }
