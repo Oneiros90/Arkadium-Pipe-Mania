@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Connector pointing North (upward) from center -->
-  <!-- Fills entire viewBox so rotation works correctly -->
-  <rect x="30" y="0" width="40" height="50" fill="#00ccff" stroke="#006688" stroke-width="2"/>
-</svg>
