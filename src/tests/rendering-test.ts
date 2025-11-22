@@ -19,7 +19,7 @@ class TestGrid {
   private container: Container;
   private grid: Grid;
   private renderer!: GridRenderer;
-  private cellSize = 80;
+  private cellSize = 128;
   private testConfigs: TestPipeConfig[] = [];
   private animationPhase = 0;
   private tooltip: HTMLDivElement;
