@@ -14,6 +14,7 @@ export const VisualConfigSchema = z.object({
       connector: z.string().default('/assets/backgrounds/start_connector.svg')
     }),
     pipes: z.object({
+      background: z.string().default('/assets/pipes/pipe_background.svg'),
       straight: z.string().default('/assets/pipes/straight.svg'),
       curved: z.string().default('/assets/pipes/curved.svg'),
       cross: z.string().default('/assets/pipes/cross.svg')

@@ -5,18 +5,19 @@ assets:
     tank: /assets/themes/original/start_tank.png
     connector: /assets/themes/original/start_connector.png
   pipes:
+    background: /assets/themes/original/pipe_background.png
     straight: /assets/themes/original/straight.png
     curved: /assets/themes/original/curved.png
     cross: /assets/themes/original/cross.png
 
 grid:
-  cellSize: 64
+  cellSize: 128
   padding: 10
   queueSize: 5
 
 water:
   color: 0xdf0000
   samples: 50
-  widthRatio: 0.2
-  curveStrength: 0
-  renderLayer: above
+  widthRatio: 0.25
+  curveStrength: 0.2
+  renderLayer: below

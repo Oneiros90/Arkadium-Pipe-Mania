@@ -132,7 +132,7 @@ export class GridRenderer {
         });
         break;
       case CellType.Pipe:
-        bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
+        bg.texture = this.assetManager.getTexture(this.visualConfig.assets.pipes.background);
         this.drawPipeCell(entry!, cell);
         break;
     }
