@@ -6,6 +6,7 @@ import { GridRenderer } from '@/rendering/GridRenderer';
 import { ConfigLoader } from '@/config/ConfigLoader';
 import { VisualConfig } from '@/config/schemas';
 import { AssetManager } from '@/rendering/AssetManager';
+import { findRecursively } from '@/utils/ObjectUtils';
 
 interface TestPipeConfig {
   pipe: Pipe;
@@ -37,7 +38,7 @@ class TestGrid {
   async initialize(): Promise<void> {
     this.visualConfig = await ConfigLoader.loadVisualConfig('/config/visual.yaml');
     this.assetManager = new AssetManager();
-    await this.assetManager.loadAssetsFromConfig(this.visualConfig);
+    await this.assetManager.loadAssets(findRecursively<string>(this.visualConfig.assets));
     this.setupTestConfigs();
 
     const rows = Math.ceil(this.testConfigs.length / this.cols);

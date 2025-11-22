@@ -2,6 +2,7 @@ import { Application, Graphics, Container, Rectangle } from 'pixi.js';
 import { logger } from '@/utils/Logger';
 import { GameConfig, VisualConfig } from '@/config/schemas';
 import { AssetManager } from './AssetManager';
+import { findRecursively } from '@/utils/ObjectUtils';
 
 export class GameRenderer {
   private app: Application;
@@ -24,7 +25,8 @@ export class GameRenderer {
 
   async initialize(): Promise<void> {
     // Preload assets using AssetManager
-    await this.assetManager.loadAssetsFromConfig(this.visualConfig);
+    console.log(findRecursively<string>(this.visualConfig.assets));
+    await this.assetManager.loadAssets(findRecursively<string>(this.visualConfig.assets));
 
     const gridWidth = this.config.grid.width * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
     const gridHeight = this.config.grid.height * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
