@@ -38,12 +38,14 @@ class Game {
     this.gridRenderer = new GridRenderer(
       this.gameRenderer.getGridContainer(),
       this.gameState.getGrid(),
-      visualConfig
+      visualConfig,
+      this.gameRenderer.getAssetManager()
     );
 
     this.queueRenderer = new QueueRenderer(
       this.gameRenderer.getQueueContainer(),
-      visualConfig
+      visualConfig,
+      this.gameRenderer.getAssetManager()
     );
 
     this.setupClickHandler();

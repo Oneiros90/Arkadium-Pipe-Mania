@@ -15,7 +15,8 @@ grid:
   queueSize: 5
 
 water:
-  color: 0x00ccff
+  color: 0xdf0000
   samples: 50
-  widthRatio: 0.3
-  curveStrength: 0.2
+  widthRatio: 0.2
+  curveStrength: 0.9
+  renderLayer: above

@@ -1,10 +1,10 @@
 import { Graphics, Container, Sprite } from 'pixi.js';
-import { createPixelArtSprite } from '@/utils/SpriteUtils';
 import { Grid } from '@/core/Grid';
 import { Cell } from '@/core/Cell';
 import { CellType, Direction } from '@/core/types';
 import { VisualConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
+import { AssetManager } from './AssetManager';
 
 export class GridRenderer {
   private cellGraphics: Map<string, { bg: Sprite; pipe?: Sprite; water: Graphics }> = new Map();
@@ -16,11 +16,21 @@ export class GridRenderer {
   constructor(
     private container: Container,
     private grid: Grid,
-    private visualConfig: VisualConfig
+    private visualConfig: VisualConfig,
+    private assetManager: AssetManager
   ) {
     this.bgLayer = new Container();
     this.waterLayer = new Container();
     this.pipeLayer = new Container();
+
+    // Enable sorting by zIndex
+    this.container.sortableChildren = true;
+
+    // Set zIndex for layers
+    this.bgLayer.zIndex = 0;
+    this.pipeLayer.zIndex = 1;
+    // Water zIndex depends on config
+    this.waterLayer.zIndex = visualConfig.water.renderLayer === 'above' ? 2 : 0.5;
 
     this.container.addChild(this.bgLayer);
     this.container.addChild(this.waterLayer);
@@ -43,7 +53,7 @@ export class GridRenderer {
     let entry = this.cellGraphics.get(key);
 
     if (!entry) {
-      const bg = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty);
+      const bg = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty));
       const water = new Graphics();
       // Pipe sprite is created on demand
 
@@ -85,14 +95,14 @@ export class GridRenderer {
 
     switch (cell.type) {
       case CellType.Empty:
-        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty).texture;
+        bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
         break;
       case CellType.Blocked:
-        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.blocked).texture;
+        bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.blocked);
         break;
       case CellType.Start:
         // Set empty texture so sprite has proper dimensions
-        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty).texture;
+        bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
 
         // Add connectors first (they go below)
         const { row, col } = cell.position;
@@ -104,12 +114,12 @@ export class GridRenderer {
         ];
 
         // Add tank on top (covers connector centers)
-        const tank = createPixelArtSprite(this.visualConfig.assets.backgrounds.tank);
+        const tank = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.tank));
         bg.addChild(tank);
-        
+
         neighbors.forEach(n => {
           if (n.valid) {
-            const connector = createPixelArtSprite(this.visualConfig.assets.backgrounds.connector);
+            const connector = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.connector));
             connector.anchor.set(0.5);
             connector.angle = n.rotation;
             // Calculate center based on parent scale
@@ -122,7 +132,7 @@ export class GridRenderer {
         });
         break;
       case CellType.Pipe:
-        bg.texture = createPixelArtSprite(this.visualConfig.assets.backgrounds.empty).texture;
+        bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
         this.drawPipeCell(entry!, cell);
         break;
     }
@@ -144,8 +154,8 @@ export class GridRenderer {
         break;
     }
 
-    // Forza la texture in modalità pixel art anche se già in cache
-    const pipeSprite = createPixelArtSprite(texturePath);
+    // AssetManager handles pixel art settings
+    const pipeSprite = new Sprite(this.assetManager.getTexture(texturePath));
     pipeSprite.width = this.visualConfig.grid.cellSize;
     pipeSprite.height = this.visualConfig.grid.cellSize;
     pipeSprite.anchor.set(0.5);

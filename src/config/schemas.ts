@@ -28,7 +28,8 @@ export const VisualConfigSchema = z.object({
     color: z.number().int().default(0x00ccff),
     samples: z.number().int().min(10).max(200).default(50),
     widthRatio: z.number().min(0.1).max(0.5).default(0.1),
-    curveStrength: z.number().min(0).max(1).default(0.2)
+    curveStrength: z.number().min(0).max(1).default(0.2),
+    renderLayer: z.enum(['above', 'below']).default('below')
   })
 });
 

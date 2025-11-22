@@ -1,15 +1,16 @@
-import { Container, Graphics, Text, TextStyle } from 'pixi.js';
-import { createPixelArtSprite } from '@/utils/SpriteUtils';
+import { Container, Graphics, Text, TextStyle, Sprite } from 'pixi.js';
 import { Pipe } from '@/core/Pipe';
 import { VisualConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
+import { AssetManager } from './AssetManager';
 
 export class QueueRenderer {
   private queueGraphics: Container[] = [];
 
   constructor(
     private container: Container,
-    private visualConfig: VisualConfig
+    private visualConfig: VisualConfig,
+    private assetManager: AssetManager
   ) {
     const title = new Text({
       text: 'Next Pipes',
@@ -74,7 +75,7 @@ export class QueueRenderer {
         break;
     }
 
-    const pipeSprite = createPixelArtSprite(texturePath);
+    const pipeSprite = new Sprite(this.assetManager.getTexture(texturePath));
     pipeSprite.width = this.visualConfig.grid.cellSize;
     pipeSprite.height = this.visualConfig.grid.cellSize;
     pipeSprite.anchor.set(0.5);

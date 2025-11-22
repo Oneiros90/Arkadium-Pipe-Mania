@@ -1,12 +1,14 @@
-import { Application, Graphics, Container, Assets, Rectangle } from 'pixi.js';
+import { Application, Graphics, Container, Rectangle } from 'pixi.js';
 import { logger } from '@/utils/Logger';
 import { GameConfig, VisualConfig } from '@/config/schemas';
+import { AssetManager } from './AssetManager';
 
 export class GameRenderer {
   private app: Application;
   private gridContainer: Container;
   private queueContainer: Container;
   private uiContainer: Container;
+  private assetManager: AssetManager;
 
   constructor(
     private container: HTMLElement,
@@ -17,10 +19,11 @@ export class GameRenderer {
     this.gridContainer = new Container();
     this.queueContainer = new Container();
     this.uiContainer = new Container();
+    this.assetManager = new AssetManager();
   }
 
   async initialize(): Promise<void> {
-    // Preload assets
+    // Preload assets using AssetManager
     const assets = [
       this.visualConfig.assets.backgrounds.empty,
       this.visualConfig.assets.backgrounds.blocked,
@@ -30,7 +33,7 @@ export class GameRenderer {
       this.visualConfig.assets.pipes.curved,
       this.visualConfig.assets.pipes.cross
     ];
-    await Assets.load(assets);
+    await this.assetManager.loadAssets(assets);
 
     const gridWidth = this.config.grid.width * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
     const gridHeight = this.config.grid.height * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
@@ -91,6 +94,10 @@ export class GameRenderer {
 
   getCellSize(): number {
     return this.visualConfig.grid.cellSize;
+  }
+
+  getAssetManager(): AssetManager {
+    return this.assetManager;
   }
 
   destroy(): void {
