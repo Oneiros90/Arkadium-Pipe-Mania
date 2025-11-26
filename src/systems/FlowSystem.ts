@@ -7,8 +7,7 @@ import { logger } from '@/utils/Logger';
 export enum FlowState {
   Idle = 'idle',
   Flowing = 'flowing',
-  Complete = 'complete',
-  Failed = 'failed'
+  End = 'end'
 }
 
 export class FlowSystem {
@@ -16,32 +15,22 @@ export class FlowSystem {
   private currentCell: Cell | null = null;
   private currentCellProgress: number = 0;
   private currentEntryDirection: Direction | null = null;
-  private requiredPathLength: number = 0;
   private completedCells: number = 0;
 
   constructor(
     private validator: PathValidator,
     private config: GameConfig,
     private onCellUpdate: (row: number, col: number) => void,
-    private onGameEnd: (won: boolean, pathLength: number) => void
-  ) {}
+    private onGameEnd: (pathLength: number) => void
+  ) { }
 
-  start(startPosition: Position, requiredLength: number): void {
-    this.requiredPathLength = requiredLength;
-    this.currentCell = this.validator.getStartCell(startPosition);
-    this.currentCellProgress = 0;
+  start(startPosition: Position): void {
     this.completedCells = 0;
     this.state = FlowState.Flowing;
-
-    if (this.currentCell) {
-      const next = this.validator.getNextCell(this.currentCell.position);
-      if (next) {
-        this.currentEntryDirection = next.entryDirection;
-      }
-    }
+    this.currentCell = this.validator.getStartCell(startPosition);
+    this.advanceToNextCell();
 
     logger.info('FlowSystem', 'Water flow started', {
-      requiredLength,
       startPosition
     });
   }
@@ -63,24 +52,21 @@ export class FlowSystem {
   }
 
   private advanceToNextCell(): void {
-    if (!this.currentCell || !this.currentEntryDirection) {
+    if (!this.currentCell) {
+      this.handleFlowEnd();
       return;
     }
 
-    this.currentCell.fillWithWater();
-    
-    if (this.currentCell.hasPipe()) {
+    if (this.currentCell.hasPipe() && this.currentEntryDirection) {
+      this.currentCell.fillWithWater();
       this.currentCell.markDirectionUsed(this.currentEntryDirection);
       const exitDir = this.currentCell.pipe!.getExitDirection(this.currentEntryDirection);
       if (exitDir) {
         this.currentCell.markDirectionUsed(exitDir);
       }
     }
-    
-    this.completedCells++;
 
     const next = this.validator.getNextCell(this.currentCell.position);
-
     if (!next) {
       this.handleFlowEnd();
       return;
@@ -89,20 +75,13 @@ export class FlowSystem {
     this.currentCell = next.cell;
     this.currentEntryDirection = next.entryDirection;
     this.currentCellProgress = 0;
+    this.completedCells++;
   }
 
   private handleFlowEnd(): void {
-    const actualLength = this.completedCells;
-    const won = actualLength >= this.requiredPathLength;
-
-    this.state = won ? FlowState.Complete : FlowState.Failed;
-
-    logger.info('FlowSystem', `Game ended: ${won ? 'WON' : 'LOST'}`, {
-      requiredLength: this.requiredPathLength,
-      actualLength
-    });
-
-    this.onGameEnd(won, actualLength);
+    this.state = FlowState.End;
+    logger.info('FlowSystem', 'Flow ended', { completedCells: this.completedCells });
+    this.onGameEnd(this.completedCells);
   }
 
   getState(): FlowState {

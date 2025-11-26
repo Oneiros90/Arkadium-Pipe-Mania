@@ -9,13 +9,6 @@ import { PathValidator } from '@/systems/PathValidator';
 import { FlowSystem } from '@/systems/FlowSystem';
 import { logger } from '@/utils/Logger';
 
-export enum GamePhase {
-  Setup = 'setup',
-  Placement = 'placement',
-  Flowing = 'flowing',
-  GameOver = 'gameover'
-}
-
 export class GameState {
   private grid: Grid;
   private random: Random;
@@ -24,12 +17,11 @@ export class GameState {
   private pathValidator: PathValidator;
   private flowSystem: FlowSystem;
 
-  private phase: GamePhase = GamePhase.Setup;
   private startPosition!: Position;
   private pipeQueue: Pipe[] = [];
   private requiredPathLength: number = 0;
-  private placementTimer: number = 0;
-  private canPlacePipes: boolean = true;
+  private gameTimer: number = 0;
+  private timerRunning: boolean = false;
 
   constructor(
     private config: GameConfig,
@@ -56,7 +48,6 @@ export class GameState {
   }
 
   start(): void {
-    this.phase = GamePhase.Setup;
     this.startPosition = this.gridInitializer.initialize();
     this.requiredPathLength = this.random.nextInt(
       this.config.gameplay.minPathLength.min,
@@ -64,7 +55,6 @@ export class GameState {
     );
 
     this.fillPipeQueue();
-    this.phase = GamePhase.Placement;
     this.notifyGridUpdate();
 
     logger.info('GameState', 'Game started', {
@@ -82,29 +72,26 @@ export class GameState {
   }
 
   update(deltaTime: number): void {
-    if (this.phase === GamePhase.Placement) {
-      if (!this.canPlacePipes) {
-        this.placementTimer += deltaTime;
-        if (this.placementTimer >= this.config.gameplay.placementDelay) {
-          this.startWaterFlow();
-        }
+    if (this.timerRunning) {
+      this.gameTimer += deltaTime;
+      if (this.gameTimer >= this.config.gameplay.placementDelay && !this.flowSystem.isActive()) {
+        this.startWaterFlow();
       }
-    } else if (this.phase === GamePhase.Flowing) {
+    }
+    if (this.flowSystem.isActive()) {
       this.flowSystem.update(deltaTime);
     }
   }
 
   private startWaterFlow(): void {
-    this.phase = GamePhase.Flowing;
-    this.flowSystem.start(this.startPosition, this.requiredPathLength);
-    logger.info('GameState', 'Water flow phase started');
+    logger.info('GameState', 'Starting water flow', {
+      gameTimer: this.gameTimer,
+      placementDelay: this.config.gameplay.placementDelay
+    });
+    this.flowSystem.start(this.startPosition);
   }
 
   handleCellClick(row: number, col: number): void {
-    if (this.phase !== GamePhase.Placement && this.phase !== GamePhase.Flowing) {
-      return;
-    }
-
     const position: Position = { row, col };
     const cell = this.grid.getCell(position);
 
@@ -125,34 +112,29 @@ export class GameState {
 
     logger.debug('GameState', 'Pipe placed', { position, pipeType: pipe.type });
 
-    if (this.canPlacePipes) {
-      this.startPlacementTimer();
+    if (!this.timerRunning) {
+      this.startGameTimer();
     }
   }
 
-  startPlacementTimer(): void {
-    if (this.phase === GamePhase.Placement) {
-      this.canPlacePipes = false;
-      this.placementTimer = 0;
-      logger.info('GameState', 'Placement timer started');
-    }
+  startGameTimer(): void {
+    this.timerRunning = true;
+    this.gameTimer = 0;
+    logger.info('GameState', 'Game timer started');
   }
 
   private handleCellFilled(row: number, col: number): void {
     this.onCellUpdate(row, col);
   }
 
-  private handleGameEnd(won: boolean, pathLength: number): void {
-    this.phase = GamePhase.GameOver;
+  private handleGameEnd(pathLength: number): void {
+    this.timerRunning = false;
+    const won = pathLength >= this.requiredPathLength;
     this.onGameEnd(won, pathLength, this.requiredPathLength);
   }
 
   getGrid(): Grid {
     return this.grid;
-  }
-
-  getPhase(): GamePhase {
-    return this.phase;
   }
 
   getRequiredPathLength(): number {
@@ -167,8 +149,8 @@ export class GameState {
     this.grid.reset();
     this.flowSystem.reset();
     this.pipeQueue = [];
-    this.placementTimer = 0;
-    this.canPlacePipes = true;
+    this.gameTimer = 0;
+    this.timerRunning = false;
     this.start();
   }
 

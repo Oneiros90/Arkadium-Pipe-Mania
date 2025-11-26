@@ -52,19 +52,20 @@ export class Logger {
     this.logs.push(entry);
 
     const formattedMessage = `[${level}] [${category}] ${message}`;
+    const logParams = data ? [data] : [];
     
     switch (level) {
       case LogLevel.Debug:
-        console.debug(formattedMessage, data ?? '');
+        console.debug(formattedMessage, ...logParams);
         break;
       case LogLevel.Info:
-        console.info(formattedMessage, data ?? '');
+        console.info(formattedMessage, ...logParams);
         break;
       case LogLevel.Warn:
-        console.warn(formattedMessage, data ?? '');
+        console.warn(formattedMessage, ...logParams);
         break;
       case LogLevel.Error:
-        console.error(formattedMessage, data ?? '');
+        console.error(formattedMessage, ...logParams);
         break;
     }
   }
