@@ -12,7 +12,7 @@ assets:
 
 grid:
   cellSize: 128
-  padding: 10
+  padding: 0
   queueSize: 5
 
 water:
@@ -24,3 +24,4 @@ water:
 
 queue:
   alpha: 0.3
+  gap: 20

@@ -7,13 +7,13 @@ gameplay:
   minPathLength:
     min: 5
     max: 8
-  flowSpeed: 0.3
+  flowSpeed: 0.25
   placementDelay: 5
 
 pipes:
   - type: straight
-    weight: 1
+    weight: 2
   - type: curved
-    weight: 1
+    weight: 4
   - type: cross
-    weight: 0.5
+    weight: 1

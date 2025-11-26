@@ -30,8 +30,8 @@ export class GameRenderer {
 
     const gridWidth = this.config.grid.width * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
     const gridHeight = this.config.grid.height * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
-    const queueWidth = 200;
-    const totalWidth = gridWidth + queueWidth + 20;
+    const queueGap = this.visualConfig.queue.gap;
+    const totalWidth = gridWidth + queueGap + this.visualConfig.grid.cellSize;
 
     await this.app.init({
       width: totalWidth,
@@ -47,7 +47,7 @@ export class GameRenderer {
     this.gridContainer.x = this.visualConfig.grid.padding;
     this.gridContainer.y = this.visualConfig.grid.padding;
 
-    this.queueContainer.x = gridWidth + 20;
+    this.queueContainer.x = gridWidth + queueGap;
     this.queueContainer.y = this.visualConfig.grid.padding;
 
     this.app.stage.addChild(this.gridContainer);

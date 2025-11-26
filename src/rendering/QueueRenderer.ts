@@ -18,11 +18,11 @@ export class QueueRenderer {
     this.clear();
     logger.info('QueueRenderer', `Rendering queue with ${queue.length} pipes`);
 
-    const totalHeight = (queue.length - 1) * (this.visualConfig.grid.cellSize + 10);
+    const totalHeight = (queue.length - 1) * (this.visualConfig.grid.cellSize + this.visualConfig.queue.gap);
 
     queue.forEach((pipe, index) => {
       const pipeContainer = new Container();
-      pipeContainer.y = totalHeight - index * (this.visualConfig.grid.cellSize + 10);
+      pipeContainer.y = totalHeight - index * (this.visualConfig.grid.cellSize + this.visualConfig.queue.gap);
       pipeContainer.alpha = index === 0 ? 1 : this.visualConfig.queue.alpha;
 
       const pipeBackground = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.pipes.background));

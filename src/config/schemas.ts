@@ -8,20 +8,21 @@ export const PipeConfigSchema = z.object({
 export const VisualConfigSchema = z.object({
   assets: z.object({
     backgrounds: z.object({
-      empty: z.string().default('/assets/backgrounds/empty.svg'),
-      blocked: z.string().default('/assets/backgrounds/blocked.svg'),
-      tank: z.string().default('/assets/backgrounds/start_tank.svg'),
-      connector: z.string().default('/assets/backgrounds/start_connector.svg')
+      empty: z.string(),
+      blocked: z.string(),
+      tank: z.string(),
+      connector: z.string()
     }),
     pipes: z.object({
-      background: z.string().default('/assets/pipes/pipe_background.svg'),
-      straight: z.string().default('/assets/pipes/straight.svg'),
-      curved: z.string().default('/assets/pipes/curved.svg'),
-      cross: z.string().default('/assets/pipes/cross.svg')
+      background: z.string(),
+      straight: z.string(),
+      curved: z.string(),
+      cross: z.string()
     })
   }),
   queue: z.object({
-    alpha: z.number().min(0).max(1).default(0.5)
+    alpha: z.number().min(0).max(1).default(0.5),
+    gap: z.number().int().min(0).default(20)
   }),
   grid: z.object({
     cellSize: z.number().int().min(32).default(64),
