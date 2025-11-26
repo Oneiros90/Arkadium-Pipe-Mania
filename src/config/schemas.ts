@@ -20,6 +20,9 @@ export const VisualConfigSchema = z.object({
       cross: z.string().default('/assets/pipes/cross.svg')
     })
   }),
+  queue: z.object({
+    alpha: z.number().min(0).max(1).default(0.5)
+  }),
   grid: z.object({
     cellSize: z.number().int().min(32).default(64),
     padding: z.number().int().min(0).default(10),

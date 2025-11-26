@@ -21,3 +21,6 @@ water:
   widthRatio: 0.25
   curveStrength: 0.2
   renderLayer: below
+
+queue:
+  alpha: 0.3

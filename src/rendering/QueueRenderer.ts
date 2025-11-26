@@ -21,22 +21,24 @@ export class QueueRenderer {
     const totalHeight = (queue.length - 1) * (this.visualConfig.grid.cellSize + 10);
 
     queue.forEach((pipe, index) => {
-      const container = new Container();
-      container.y = totalHeight - index * (this.visualConfig.grid.cellSize + 10);
+      const pipeContainer = new Container();
+      pipeContainer.y = totalHeight - index * (this.visualConfig.grid.cellSize + 10);
+      pipeContainer.alpha = index === 0 ? 1 : this.visualConfig.queue.alpha;
 
       const pipeBackground = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.pipes.background));
       pipeBackground.width = this.visualConfig.grid.cellSize;
       pipeBackground.height = this.visualConfig.grid.cellSize;
-      container.addChild(pipeBackground);
+      pipeContainer.addChild(pipeBackground);
 
-      this.drawPipe(container, pipe);
+      const pipeSprite = this.getPipeSprite(pipe);
+      pipeContainer.addChild(pipeSprite);
 
-      this.container.addChild(container);
-      this.queueGraphics.push(container);
+      this.container.addChild(pipeContainer);
+      this.queueGraphics.push(pipeContainer);
     });
   }
 
-  private drawPipe(container: Container, pipe: Pipe): void {
+  private getPipeSprite(pipe: Pipe): Sprite {
     let texturePath = '';
     switch (pipe.type) {
       case 'straight':
@@ -57,7 +59,7 @@ export class QueueRenderer {
     pipeSprite.x = this.visualConfig.grid.cellSize / 2;
     pipeSprite.y = this.visualConfig.grid.cellSize / 2;
     pipeSprite.angle = pipe.rotation;
-    container.addChild(pipeSprite);
+    return pipeSprite;
   }
 
   clear(): void {
