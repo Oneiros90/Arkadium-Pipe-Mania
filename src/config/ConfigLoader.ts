@@ -11,8 +11,8 @@ export class ConfigLoader {
 
   static async loadFromFile(path: string): Promise<GameConfig> {
     try {
-      // Use window.location to build correct path for GitHub Pages
-      const basePath = document.querySelector('base')?.getAttribute('href') || '/';
+      // Use Vite's BASE_URL environment variable
+      const basePath = import.meta.env.BASE_URL;
       const fullPath = path.startsWith('/') ? `${basePath}${path.substring(1)}` : path;
 
       logger.info('ConfigLoader', `Loading configuration from: ${fullPath}`);
@@ -39,8 +39,8 @@ export class ConfigLoader {
 
   static async loadVisualConfig(path: string): Promise<VisualConfig> {
     try {
-      // Use window.location to build correct path for GitHub Pages
-      const basePath = document.querySelector('base')?.getAttribute('href') || '/';
+      // Use Vite's BASE_URL environment variable
+      const basePath = import.meta.env.BASE_URL;
       const fullPath = path.startsWith('/') ? `${basePath}${path.substring(1)}` : path;
 
       logger.info('ConfigLoader', `Loading visual configuration from: ${fullPath}`);
