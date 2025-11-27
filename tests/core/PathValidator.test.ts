@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PathValidator } from '../../src/systems/PathValidator';
 import { Grid } from '../../src/core/Grid';
-import { Pipe } from '../../src/core/Pipe';
 import { StraightPipe } from '../../src/pipes/StraightPipe';
 import { CurvedPipe } from '../../src/pipes/CurvedPipe';
 import { Direction } from '../../src/core/types';

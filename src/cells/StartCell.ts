@@ -1,6 +1,9 @@
 import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 
+/**
+ * Represents the starting cell of the water flow.
+ */
 export class StartCell extends Cell {
   readonly type = 'start';
   readonly isEmpty = false;

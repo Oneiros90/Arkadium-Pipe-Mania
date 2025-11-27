@@ -2,6 +2,9 @@ import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 import { Pipe } from '../core/Pipe';
 
+/**
+ * Represents a cell containing a pipe segment.
+ */
 export class PipeCell extends Cell {
   readonly type = 'pipe';
   readonly isEmpty = false;

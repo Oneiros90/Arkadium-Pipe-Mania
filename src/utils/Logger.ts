@@ -13,12 +13,15 @@ export interface LogEntry {
   data?: unknown;
 }
 
+/**
+ * A simple logger utility with log levels and categorization.
+ */
 export class Logger {
   private static instance: Logger;
   private logs: LogEntry[] = [];
   private minLevel: LogLevel = LogLevel.Info;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): Logger {
     if (!Logger.instance) {
@@ -53,7 +56,7 @@ export class Logger {
 
     const formattedMessage = `[${level}] [${category}] ${message}`;
     const logParams = data ? [data] : [];
-    
+
     switch (level) {
       case LogLevel.Debug:
         console.debug(formattedMessage, ...logParams);

@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FlowSystem, FlowState } from '../../src/systems/FlowSystem';
 import { PathValidator } from '../../src/systems/PathValidator';
 import { GameConfig } from '../../src/config/schemas';
-import { Cell } from '../../src/core/Cell';
 import { EmptyCell } from '../../src/cells/EmptyCell';
 import { StartCell } from '../../src/cells/StartCell';
 import { Direction } from '../../src/core/types';

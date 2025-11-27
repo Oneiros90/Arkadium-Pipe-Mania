@@ -6,6 +6,9 @@ import { VisualConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 import { AssetManager } from './AssetManager';
 
+/**
+ * Handles the rendering of the game grid, including cells, pipes, and water flow.
+ */
 export class GridRenderer {
   private cellGraphics: Map<string, { bgContainer: Container; bg: Sprite; pipe?: Sprite; water: Graphics }> = new Map();
 
@@ -23,13 +26,10 @@ export class GridRenderer {
     this.waterLayer = new Container();
     this.pipeLayer = new Container();
 
-    // Enable sorting by zIndex
     this.container.sortableChildren = true;
 
-    // Set zIndex for layers
     this.bgLayer.zIndex = 0;
     this.pipeLayer.zIndex = 1;
-    // Water zIndex depends on config
     this.waterLayer.zIndex = visualConfig.water.renderLayer === 'above' ? 2 : 0.5;
 
     this.container.addChild(this.bgLayer);
@@ -53,11 +53,9 @@ export class GridRenderer {
     let entry = this.cellGraphics.get(key);
 
     if (!entry) {
-      // Create a container to hold the background and its decorations
       const bgContainer = new Container();
       const bg = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty));
       const water = new Graphics();
-      // Pipe sprite is created on demand
 
       bgContainer.x = cell.position.col * this.visualConfig.grid.cellSize;
       bgContainer.y = cell.position.row * this.visualConfig.grid.cellSize;
@@ -65,8 +63,6 @@ export class GridRenderer {
       bg.x = 0;
       bg.y = 0;
 
-      // Water shares position logic but is a Graphics object, so we draw at absolute coordinates or move it
-      // Easier to move the graphics object itself
       water.x = bgContainer.x;
       water.y = bgContainer.y;
 
@@ -77,11 +73,6 @@ export class GridRenderer {
       entry = { bgContainer, bg, water };
       this.cellGraphics.set(key, entry);
     }
-
-    // entry is guaranteed to exist here because we just set it if it was missing
-    // However, TypeScript doesn't know that Map.get() returns the same object we just set
-    // So we cast it or re-get it, but re-getting is inefficient.
-    // Let's just use the local variables if we created a new entry, or cast entry.
 
     const { bgContainer, bg, water } = entry!;
 

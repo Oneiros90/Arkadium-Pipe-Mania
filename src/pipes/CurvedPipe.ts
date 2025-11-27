@@ -1,6 +1,9 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
 
+/**
+ * A curved pipe segment connecting adjacent directions (90-degree turn).
+ */
 export class CurvedPipe extends Pipe {
   readonly type = 'curved';
 

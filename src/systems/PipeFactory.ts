@@ -6,6 +6,9 @@ import { Random } from '@/utils/Random';
 import { PipeConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 
+/**
+ * Factory class for creating pipe instances based on configuration weights.
+ */
 export class PipeFactory {
   private weights: Map<string, number> = new Map();
   private totalWeight: number = 0;

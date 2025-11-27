@@ -4,6 +4,9 @@ import { VisualConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 import { AssetManager } from './AssetManager';
 
+/**
+ * Renders the queue of upcoming pipes.
+ */
 export class QueueRenderer {
   private queueGraphics: Container[] = [];
 

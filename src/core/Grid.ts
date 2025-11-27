@@ -6,6 +6,9 @@ import { PipeCell } from '../cells/PipeCell';
 import { Position, Direction } from './types';
 import { Pipe } from './Pipe';
 
+/**
+ * Represents the game grid, managing cells and their states.
+ */
 export class Grid {
   private cells: Cell[][];
 

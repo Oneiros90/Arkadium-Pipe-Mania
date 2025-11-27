@@ -1,6 +1,10 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
 
+/**
+ * A cross pipe segment connecting all four directions.
+ * Water flows straight through without turning.
+ */
 export class CrossPipe extends Pipe {
   readonly type = 'cross';
 
@@ -11,7 +15,6 @@ export class CrossPipe extends Pipe {
     );
   }
 
-  // Override to maintain cross-pipe logic (water goes straight through)
   getExitDirection(entryDirection: Direction): Direction | null {
     const connections = this.getActiveConnections();
 
@@ -19,7 +22,6 @@ export class CrossPipe extends Pipe {
       return null;
     }
 
-    // Cross pipe: water exits in opposite direction
     switch (entryDirection) {
       case Direction.North:
         return Direction.South;

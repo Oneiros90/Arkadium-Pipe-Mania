@@ -4,6 +4,9 @@ import { Random } from '@/utils/Random';
 import { GameConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 
+/**
+ * Initializes the grid with blocked cells and a start position.
+ */
 export class GridInitializer {
   constructor(
     private grid: Grid,

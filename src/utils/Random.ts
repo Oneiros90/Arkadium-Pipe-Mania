@@ -1,3 +1,6 @@
+/**
+ * A seeded random number generator.
+ */
 export class Random {
   private seed: number;
 

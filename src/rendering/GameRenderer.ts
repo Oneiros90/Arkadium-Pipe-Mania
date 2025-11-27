@@ -4,6 +4,9 @@ import { GameConfig, VisualConfig } from '@/config/schemas';
 import { AssetManager } from './AssetManager';
 import { findRecursively } from '@/utils/ObjectUtils';
 
+/**
+ * Main renderer class that orchestrates the rendering of the game.
+ */
 export class GameRenderer {
   private app: Application;
   private gridContainer: Container;

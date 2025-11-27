@@ -9,6 +9,9 @@ import { PathValidator } from '@/systems/PathValidator';
 import { FlowSystem } from '@/systems/FlowSystem';
 import { logger } from '@/utils/Logger';
 
+/**
+ * Manages the overall game state, including the grid, pipe queue, and game loop.
+ */
 export class GameState {
   private grid: Grid;
   private random: Random;

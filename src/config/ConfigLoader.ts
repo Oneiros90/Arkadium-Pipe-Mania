@@ -2,6 +2,9 @@ import { load } from 'js-yaml';
 import { GameConfig, GameConfigSchema, VisualConfig, VisualConfigSchema } from './schemas';
 import { logger } from '@/utils/Logger';
 
+/**
+ * Handles loading and parsing of game and visual configurations.
+ */
 export class ConfigLoader {
   private static config: GameConfig | null = null;
   private static visualConfig: VisualConfig | null = null;
@@ -9,7 +12,7 @@ export class ConfigLoader {
   static async loadFromFile(path: string): Promise<GameConfig> {
     try {
       logger.info('ConfigLoader', `Loading configuration from: ${path}`);
-      
+
       const response = await fetch(path);
       if (!response.ok) {
         throw new Error(`Failed to fetch config: ${response.statusText}`);
@@ -19,10 +22,10 @@ export class ConfigLoader {
       const rawConfig = load(text);
 
       const validatedConfig = GameConfigSchema.parse(rawConfig);
-      
+
       this.config = validatedConfig;
       logger.info('ConfigLoader', 'Configuration loaded successfully', validatedConfig);
-      
+
       return validatedConfig;
     } catch (error) {
       logger.error('ConfigLoader', 'Failed to load configuration', error);
@@ -33,7 +36,7 @@ export class ConfigLoader {
   static async loadVisualConfig(path: string): Promise<VisualConfig> {
     try {
       logger.info('ConfigLoader', `Loading visual configuration from: ${path}`);
-      
+
       const response = await fetch(path);
       if (!response.ok) {
         throw new Error(`Failed to fetch visual config: ${response.statusText}`);
@@ -43,10 +46,10 @@ export class ConfigLoader {
       const rawConfig = load(text);
 
       const validatedConfig = VisualConfigSchema.parse(rawConfig);
-      
+
       this.visualConfig = validatedConfig;
       logger.info('ConfigLoader', 'Visual configuration loaded successfully', validatedConfig);
-      
+
       return validatedConfig;
     } catch (error) {
       logger.error('ConfigLoader', 'Failed to load visual configuration', error);

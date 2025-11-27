@@ -1,5 +1,9 @@
 import { Direction } from './types';
 
+/**
+ * Abstract base class representing a pipe segment.
+ * Defines connections and rotation.
+ */
 export abstract class Pipe {
   constructor(
     public readonly rotation: number,

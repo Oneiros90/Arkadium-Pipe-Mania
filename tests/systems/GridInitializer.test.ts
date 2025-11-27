@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { GridInitializer } from '../../src/systems/GridInitializer';
 import { Grid } from '../../src/core/Grid';
 import { Random } from '../../src/utils/Random';

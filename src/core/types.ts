@@ -1,3 +1,6 @@
+/**
+ * Cardinal directions for pipe connections and movement.
+ */
 export enum Direction {
   North = 'N',
   East = 'E',
@@ -5,6 +8,9 @@ export enum Direction {
   West = 'W'
 }
 
+/**
+ * Coordinates in the grid (row, col).
+ */
 export interface Position {
   row: number;
   col: number;

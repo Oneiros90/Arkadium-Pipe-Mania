@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+/**
+ * Zod schemas for validating game configuration.
+ */
 export const PipeConfigSchema = z.object({
   type: z.enum(['straight', 'curved', 'cross']),
   weight: z.number().min(0).default(1)

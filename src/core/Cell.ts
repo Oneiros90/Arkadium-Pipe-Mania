@@ -6,6 +6,10 @@ interface WaterFlow {
   entryDirection: Direction;
 }
 
+/**
+ * Abstract base class representing a single cell in the grid.
+ * Handles water flow state and pipe containment.
+ */
 export abstract class Cell {
   public waterFlows: WaterFlow[] = [];
   public usedDirections: Set<Direction> = new Set();

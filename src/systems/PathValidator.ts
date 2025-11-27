@@ -3,6 +3,9 @@ import { Cell } from '@/core/Cell';
 import { Position, Direction } from '@/core/types';
 import { logger } from '@/utils/Logger';
 
+/**
+ * Validates pipe connections and calculates path lengths.
+ */
 export class PathValidator {
   constructor(private grid: Grid) { }
 

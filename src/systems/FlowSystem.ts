@@ -10,6 +10,9 @@ export enum FlowState {
   End = 'end'
 }
 
+/**
+ * Manages the water flow logic, including progress updates and cell transitions.
+ */
 export class FlowSystem {
   private state: FlowState = FlowState.Idle;
   private currentCell: Cell | null = null;
