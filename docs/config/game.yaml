@@ -1,0 +1,21 @@
+grid:
+  width: 9
+  height: 7
+
+gameplay:
+  blockRatio: 0.15
+  minPathLength:
+    min: 5
+    max: 8
+  flowSpeed: 0.25
+  placementDelay: 5
+
+pipes:
+  - type: straight
+    weight: 2
+  - type: curved
+    weight: 4
+  - type: cross
+    weight: 1
+
+theme: ms-dos

@@ -1,0 +1,30 @@
+assets:
+  backgrounds:
+    empty: /assets/themes/original/empty.png
+    blocked: /assets/themes/original/blocked.png
+    tank: /assets/themes/original/start_tank.png
+    connector: /assets/themes/original/start_connector.png
+  pipes:
+    background: /assets/themes/original/pipe_background.png
+    straight: /assets/themes/original/straight.png
+    curved: /assets/themes/original/curved.png
+    cross: /assets/themes/original/cross.png
+
+canvas:
+  backgroundColor: 0x1a1a1a
+
+grid:
+  cellSize: 128
+  padding: 0
+  queueSize: 5
+
+water:
+  color: 0xdf0000
+  samples: 50
+  widthRatio: 0.25
+  curveStrength: 0.2
+  renderLayer: below
+
+queue:
+  alpha: 0.3
+  gap: 20
