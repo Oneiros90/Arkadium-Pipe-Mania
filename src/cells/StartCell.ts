@@ -1,7 +1,7 @@
 import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 import type { VisualConfig } from '@/config/schemas';
-import type { Container, Sprite } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import type { AssetManager } from '@/rendering/AssetManager';
 import type { Grid } from '../core/Grid';
 
@@ -32,7 +32,6 @@ export class StartCell extends Cell {
     assetManager: AssetManager,
     grid: Grid
   ): void {
-    const { Sprite } = require('pixi.js');
     const { row, col } = this.position;
 
     // Check valid neighbors for connectors
@@ -43,7 +42,15 @@ export class StartCell extends Cell {
       { dir: 'W', valid: this.isValidNeighbor(row, col - 1, grid), rotation: 270 }
     ];
 
-    // Add connectors for valid neighbors
+    // Add tank first (will be below connectors)
+    const tank: Sprite = new Sprite(assetManager.getTexture(config.assets.backgrounds.tank));
+    tank.width = config.grid.cellSize;
+    tank.height = config.grid.cellSize;
+    tank.x = 0;
+    tank.y = 0;
+    container.addChild(tank);
+
+    // Add connectors on top
     neighbors.forEach(n => {
       if (n.valid) {
         const connector: Sprite = new Sprite(assetManager.getTexture(config.assets.backgrounds.connector));
@@ -56,14 +63,6 @@ export class StartCell extends Cell {
         container.addChild(connector);
       }
     });
-
-    // Add tank on top (covers connector centers)
-    const tank: Sprite = new Sprite(assetManager.getTexture(config.assets.backgrounds.tank));
-    tank.width = config.grid.cellSize;
-    tank.height = config.grid.cellSize;
-    tank.x = 0;
-    tank.y = 0;
-    container.addChild(tank);
   }
 
   private isValidNeighbor(row: number, col: number, grid: Grid): boolean {

@@ -18,7 +18,7 @@ export class PipeCell extends Cell {
   }
 
   canPlacePipe(): boolean {
-    return false;
+    return this.waterFlows.length === 0;
   }
 
   getBackgroundTexture(config: VisualConfig): string {

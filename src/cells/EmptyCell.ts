@@ -16,7 +16,7 @@ export class EmptyCell extends Cell {
   }
 
   canPlacePipe(): boolean {
-    return true;
+    return this.waterFlows.length === 0;
   }
 
   getBackgroundTexture(config: VisualConfig): string {
