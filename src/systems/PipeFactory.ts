@@ -1,7 +1,5 @@
 import { Pipe } from '@/core/Pipe';
-import { StraightPipe } from '@/pipes/StraightPipe';
-import { CurvedPipe } from '@/pipes/CurvedPipe';
-import { CrossPipe } from '@/pipes/CrossPipe';
+import { PipeRegistry } from '@/core/PipeRegistry';
 import { Random } from '@/utils/Random';
 import { PipeConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
@@ -22,8 +20,12 @@ export class PipeFactory {
 
   private initializeWeights(configs: PipeConfig[]): void {
     configs.forEach((config) => {
-      this.weights.set(config.type, config.weight);
-      this.totalWeight += config.weight;
+      if (PipeRegistry.has(config.type)) {
+        this.weights.set(config.type, config.weight);
+        this.totalWeight += config.weight;
+      } else {
+        logger.warn('PipeFactory', `Skipping unknown pipe type in config: ${config.type}`);
+      }
     });
     logger.debug('PipeFactory', 'Initialized pipe weights', {
       weights: Object.fromEntries(this.weights),
@@ -46,19 +48,27 @@ export class PipeFactory {
       }
     }
 
-    return 'straight';
+    // Fallback to first registered type or throw if empty
+    const types = PipeRegistry.getRegisteredTypes();
+    if (types.length > 0) {
+      return types[0];
+    }
+    throw new Error('No pipes registered in PipeRegistry');
   }
 
   private createPipe(type: string): Pipe {
-    switch (type) {
-      case 'straight':
-        return new StraightPipe(this.random.choice([0, 90]) as 0 | 90);
-      case 'curved':
-        return new CurvedPipe(this.random.choice([0, 90, 180, 270]) as 0 | 90 | 180 | 270);
-      case 'cross':
-        return new CrossPipe();
-      default:
-        return new StraightPipe(0);
+    try {
+      if (type === 'straight') {
+        return PipeRegistry.create(type, this.random.choice([0, 90]));
+      } else if (type === 'curved') {
+        return PipeRegistry.create(type, this.random.choice([0, 90, 180, 270]));
+      } else {
+        return PipeRegistry.create(type);
+      }
+    } catch (e) {
+      logger.error('PipeFactory', `Failed to create pipe of type ${type}`, e);
+      // Fallback
+      return new (PipeRegistry.getRegisteredTypes().length > 0 ? PipeRegistry.getRegisteredTypes()[0] as any : Error)();
     }
   }
 }

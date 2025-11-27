@@ -1,12 +1,14 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
+import { PipeRegistry } from '../core/PipeRegistry';
 
 /**
  * A cross pipe segment connecting all four directions.
  * Water flows straight through without turning.
  */
 export class CrossPipe extends Pipe {
-  readonly type = 'cross';
+  static readonly TYPE = 'cross';
+  readonly type = CrossPipe.TYPE;
 
   constructor() {
     super(
@@ -34,3 +36,5 @@ export class CrossPipe extends Pipe {
     }
   }
 }
+
+PipeRegistry.register(CrossPipe.TYPE, CrossPipe);

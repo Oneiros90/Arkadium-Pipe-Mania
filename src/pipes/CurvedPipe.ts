@@ -1,11 +1,13 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
+import { PipeRegistry } from '../core/PipeRegistry';
 
 /**
  * A curved pipe segment connecting adjacent directions (90-degree turn).
  */
 export class CurvedPipe extends Pipe {
-  readonly type = 'curved';
+  static readonly TYPE = 'curved';
+  readonly type = CurvedPipe.TYPE;
 
   constructor(rotation: 0 | 90 | 180 | 270 = 0) {
     super(
@@ -19,3 +21,5 @@ export class CurvedPipe extends Pipe {
     );
   }
 }
+
+PipeRegistry.register(CurvedPipe.TYPE, CurvedPipe);
