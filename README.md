@@ -18,6 +18,12 @@ Connect pipes to guide flowing water from the start point through the grid. Buil
 - **Win Condition**: Complete the required path length before water reaches a dead-end
 - **Lose Condition**: Water exits the valid path or reaches a dead-end prematurely
 
+## 📸 Screenshots
+
+| Classic Theme | MS-DOS Theme |
+|:---:|:---:|
+| ![Classic Theme](screenshots/original.png) | ![MS-DOS Theme](screenshots/ms-dos.png) |
+
 ## 🚀 Development
 
 ### Prerequisites
