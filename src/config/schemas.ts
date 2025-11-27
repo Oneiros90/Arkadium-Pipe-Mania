@@ -23,6 +23,9 @@ export const VisualConfigSchema = z.object({
       cross: z.string()
     })
   }),
+  canvas: z.object({
+    backgroundColor: z.number().int().default(0x1a1a1a)
+  }),
   queue: z.object({
     alpha: z.number().min(0).max(1).default(0.5),
     gap: z.number().int().min(0).default(20)
@@ -60,7 +63,8 @@ export const GameConfigSchema = z.object({
     { type: 'curved', weight: 1 },
     { type: 'cross', weight: 0.5 }
   ]),
-  seed: z.number().int().optional()
+  seed: z.number().int().optional(),
+  theme: z.string().default('original')
 });
 
 export type GameConfig = z.infer<typeof GameConfigSchema>;

@@ -10,6 +10,9 @@ assets:
     curved: /assets/themes/original/curved.png
     cross: /assets/themes/original/cross.png
 
+canvas:
+  backgroundColor: 0x1a1a1a
+
 grid:
   cellSize: 128
   padding: 0

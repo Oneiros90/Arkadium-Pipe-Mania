@@ -27,9 +27,8 @@ export class GameRenderer {
   }
 
   async initialize(): Promise<void> {
-    // Preload assets using AssetManager
-    console.log(findRecursively<string>(this.visualConfig.assets));
-    await this.assetManager.loadAssets(findRecursively<string>(this.visualConfig.assets));
+    const assets = findRecursively<string>(this.visualConfig.assets);
+    await this.assetManager.loadAssets(assets);
 
     const gridWidth = this.config.grid.width * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
     const gridHeight = this.config.grid.height * this.visualConfig.grid.cellSize + this.visualConfig.grid.padding * 2;
@@ -39,7 +38,7 @@ export class GameRenderer {
     await this.app.init({
       width: totalWidth,
       height: gridHeight,
-      backgroundColor: 0x1a1a1a,
+      backgroundColor: this.visualConfig.canvas.backgroundColor,
       antialias: true,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true
@@ -59,7 +58,6 @@ export class GameRenderer {
 
     this.drawGridBackground();
 
-    // Ensure grid container captures clicks
     this.gridContainer.hitArea = new Rectangle(0, 0, gridWidth, gridHeight);
     logger.info('GameRenderer', 'Grid container initialized with hitArea', { width: gridWidth, height: gridHeight });
   }

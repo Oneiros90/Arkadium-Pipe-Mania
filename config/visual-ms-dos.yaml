@@ -1,0 +1,30 @@
+assets:
+  backgrounds:
+    empty: /assets/themes/ms-dos/empty.png
+    blocked: /assets/themes/ms-dos/blocked.png
+    tank: /assets/themes/ms-dos/start_tank.png
+    connector: /assets/themes/ms-dos/start_connector.png
+  pipes:
+    background: /assets/themes/ms-dos/pipe_background.png
+    straight: /assets/themes/ms-dos/straight.png
+    curved: /assets/themes/ms-dos/curved.png
+    cross: /assets/themes/ms-dos/cross.png
+
+canvas:
+  backgroundColor: 0x1a1a1a
+
+grid:
+  cellSize: 128
+  padding: 0
+  queueSize: 5
+
+water:
+  color: 0x55FF55
+  samples: 50
+  widthRatio: 0.25
+  curveStrength: 0.5
+  renderLayer: below
+
+queue:
+  alpha: 0.2
+  gap: 20

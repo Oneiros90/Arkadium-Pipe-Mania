@@ -18,7 +18,7 @@ class Game {
     logger.info('Game', 'Initializing game...');
 
     const config = await ConfigLoader.loadFromFile('/config/game.yaml');
-    const visualConfig = await ConfigLoader.loadVisualConfig('/config/visual.yaml');
+    const visualConfig = await ConfigLoader.loadVisualConfig(`/config/visual-${config.theme}.yaml`);
 
     const container = document.getElementById('game-container');
     if (!container) {
