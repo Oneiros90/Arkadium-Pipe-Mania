@@ -11,21 +11,28 @@ export class AssetManager {
    * Load specific asset paths.
    */
   async loadAssets(paths: string[]): Promise<void> {
-    // Load all resources using Pixi's Assets manager
-    // Assets.load() in Pixi v8 returns Texture objects directly
-    const textures = await Assets.load(paths);
+    // Prepend BASE_URL to paths for correct resolution in all environments
+    const basePath = import.meta.env.BASE_URL;
+    const fullPaths = paths.map(path =>
+      path.startsWith('/') ? `${basePath}${path.substring(1)}` : path
+    );
 
-    // Configure each texture for pixel art and cache
-    for (const path of paths) {
-      const texture = textures[path] as Texture;
+    // Load all resources using Pixi's Assets manager
+    const textures = await Assets.load(fullPaths);
+
+    // Configure each texture for pixel art and cache with original path as key
+    for (let i = 0; i < paths.length; i++) {
+      const originalPath = paths[i];
+      const fullPath = fullPaths[i];
+      const texture = textures[fullPath] as Texture;
 
       // Set pixel art rendering (no filtering)
       if (texture && texture.source) {
         texture.source.scaleMode = 'nearest';
       }
 
-      // Cache the texture
-      this.textures.set(path, texture);
+      // Cache the texture with original path as key
+      this.textures.set(originalPath, texture);
     }
   }
 
