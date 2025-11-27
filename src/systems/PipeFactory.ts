@@ -1,11 +1,13 @@
 import { Pipe } from '@/core/Pipe';
-import { PipeType } from '@/core/types';
+import { StraightPipe } from '@/core/pipes/StraightPipe';
+import { CurvedPipe } from '@/core/pipes/CurvedPipe';
+import { CrossPipe } from '@/core/pipes/CrossPipe';
 import { Random } from '@/utils/Random';
 import { PipeConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 
 export class PipeFactory {
-  private weights: Map<PipeType, number> = new Map();
+  private weights: Map<string, number> = new Map();
   private totalWeight: number = 0;
 
   constructor(
@@ -17,7 +19,7 @@ export class PipeFactory {
 
   private initializeWeights(configs: PipeConfig[]): void {
     configs.forEach((config) => {
-      this.weights.set(config.type as PipeType, config.weight);
+      this.weights.set(config.type, config.weight);
       this.totalWeight += config.weight;
     });
     logger.debug('PipeFactory', 'Initialized pipe weights', {
@@ -31,27 +33,29 @@ export class PipeFactory {
     return this.createPipe(type);
   }
 
-  private selectRandomType(): PipeType {
+  private selectRandomType(): string {
     let roll = this.random.nextFloat(0, this.totalWeight);
-    
+
     for (const [type, weight] of this.weights.entries()) {
       roll -= weight;
       if (roll <= 0) {
         return type;
       }
     }
-    
-    return PipeType.Straight;
+
+    return 'straight';
   }
 
-  private createPipe(type: PipeType): Pipe {
+  private createPipe(type: string): Pipe {
     switch (type) {
-      case PipeType.Straight:
-        return Pipe.createStraight(this.random.choice([0, 90]) as 0 | 90);
-      case PipeType.Curved:
-        return Pipe.createCurved(this.random.choice([0, 90, 180, 270]) as 0 | 90 | 180 | 270);
-      case PipeType.Cross:
-        return Pipe.createCross();
+      case 'straight':
+        return new StraightPipe(this.random.choice([0, 90]) as 0 | 90);
+      case 'curved':
+        return new CurvedPipe(this.random.choice([0, 90, 180, 270]) as 0 | 90 | 180 | 270);
+      case 'cross':
+        return new CrossPipe();
+      default:
+        return new StraightPipe(0);
     }
   }
 }

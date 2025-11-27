@@ -40,7 +40,7 @@ export class QueueRenderer {
 
   private getPipeSprite(pipe: Pipe): Sprite {
     let texturePath = '';
-    switch (pipe.type) {
+    switch (pipe.getTypeName()) {
       case 'straight':
         texturePath = this.visualConfig.assets.pipes.straight;
         break;

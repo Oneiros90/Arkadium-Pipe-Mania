@@ -1,4 +1,4 @@
-import { CellType, Position, Direction } from './types';
+import { Position, Direction } from './types';
 import { Pipe } from './Pipe';
 
 interface WaterFlow {
@@ -6,54 +6,24 @@ interface WaterFlow {
   entryDirection: Direction;
 }
 
-export class Cell {
+export abstract class Cell {
   public waterFlows: WaterFlow[] = [];
   public usedDirections: Set<Direction> = new Set();
+  public pipe: Pipe | null = null;
+  public hasWater: boolean = false;
 
   constructor(
-    public readonly position: Position,
-    public type: CellType = CellType.Empty,
-    public pipe: Pipe | null = null,
-    public hasWater: boolean = false
-  ) {}
+    public readonly position: Position
+  ) { }
 
-  isEmpty(): boolean {
-    return this.type === CellType.Empty;
-  }
-
-  isBlocked(): boolean {
-    return this.type === CellType.Blocked;
-  }
+  abstract getTypeName(): string;
+  abstract isEmpty(): boolean;
+  abstract isBlocked(): boolean;
+  abstract isStart(): boolean;
+  abstract canPlacePipe(): boolean;
 
   hasPipe(): boolean {
-    return this.type === CellType.Pipe && this.pipe !== null;
-  }
-
-  isStart(): boolean {
-    return this.type === CellType.Start;
-  }
-
-  canPlacePipe(): boolean {
-    if (this.waterFlows.length > 0) {
-      return false;
-    }
-    return this.type === CellType.Empty || this.type === CellType.Pipe;
-  }
-
-  placePipe(pipe: Pipe): void {
-    if (!this.canPlacePipe()) {
-      throw new Error(`Cannot place pipe at blocked or start cell`);
-    }
-    this.pipe = pipe;
-    this.type = CellType.Pipe;
-  }
-
-  clearPipe(): void {
-    this.pipe = null;
-    this.type = CellType.Empty;
-    this.hasWater = false;
-    this.waterFlows = [];
-    this.usedDirections.clear();
+    return this.pipe !== null;
   }
 
   fillWithWater(): void {
@@ -64,13 +34,13 @@ export class Cell {
   setWaterLevel(level: number, entryDirection: Direction): void {
     const clampedLevel = Math.max(0, Math.min(1, level));
     const existingFlow = this.waterFlows.find(f => f.entryDirection === entryDirection);
-    
+
     if (existingFlow) {
       existingFlow.level = clampedLevel;
     } else {
       this.waterFlows.push({ level: clampedLevel, entryDirection });
     }
-    
+
     this.hasWater = this.waterFlows.some(f => f.level > 0);
   }
 

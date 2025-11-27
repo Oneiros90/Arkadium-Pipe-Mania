@@ -1,7 +1,7 @@
 import { Graphics, Container, Sprite } from 'pixi.js';
 import { Grid } from '@/core/Grid';
 import { Cell } from '@/core/Cell';
-import { CellType, Direction } from '@/core/types';
+import { Direction } from '@/core/types';
 import { VisualConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';
 import { AssetManager } from './AssetManager';
@@ -100,14 +100,14 @@ export class GridRenderer {
     bgContainer.removeChildren();
     bgContainer.addChild(bg);
 
-    switch (cell.type) {
-      case CellType.Empty:
+    switch (cell.getTypeName()) {
+      case 'empty':
         bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
         break;
-      case CellType.Blocked:
+      case 'blocked':
         bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.blocked);
         break;
-      case CellType.Start:
+      case 'start':
         // Set empty texture so sprite has proper dimensions
         bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
 
@@ -143,7 +143,7 @@ export class GridRenderer {
           }
         });
         break;
-      case CellType.Pipe:
+      case 'pipe':
         bg.texture = this.assetManager.getTexture(this.visualConfig.assets.pipes.background);
         this.drawPipeCell(entry!, cell);
         break;
@@ -154,7 +154,7 @@ export class GridRenderer {
     if (!cell.pipe) return;
 
     let texturePath = '';
-    switch (cell.pipe.type) {
+    switch (cell.pipe.getTypeName()) {
       case 'straight':
         texturePath = this.visualConfig.assets.pipes.straight;
         break;
@@ -387,7 +387,7 @@ export class GridRenderer {
   private isValidNeighbor(row: number, col: number): boolean {
     const neighbor = this.grid.getCell({ row, col });
     if (!neighbor) return false; // Out of bounds
-    if (neighbor.type === CellType.Blocked) return false; // Blocked
+    if (neighbor.isBlocked()) return false; // Blocked
     return true;
   }
 }

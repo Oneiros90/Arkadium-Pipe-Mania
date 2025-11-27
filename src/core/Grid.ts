@@ -1,5 +1,9 @@
 import { Cell } from './Cell';
-import { Position, Direction, CellType } from './types';
+import { EmptyCell } from './cells/EmptyCell';
+import { BlockedCell } from './cells/BlockedCell';
+import { StartCell } from './cells/StartCell';
+import { PipeCell } from './cells/PipeCell';
+import { Position, Direction } from './types';
 import { Pipe } from './Pipe';
 
 export class Grid {
@@ -17,7 +21,7 @@ export class Grid {
     for (let row = 0; row < this.height; row++) {
       cells[row] = [];
       for (let col = 0; col < this.width; col++) {
-        cells[row][col] = new Cell({ row, col });
+        cells[row][col] = new EmptyCell({ row, col });
       }
     }
     return cells;
@@ -40,17 +44,17 @@ export class Grid {
   }
 
   setBlocked(position: Position): void {
-    const cell = this.getCell(position);
-    if (cell) {
-      cell.type = CellType.Blocked;
+    if (!this.isValidPosition(position)) {
+      return;
     }
+    this.cells[position.row][position.col] = new BlockedCell(position);
   }
 
   setStart(position: Position): void {
-    const cell = this.getCell(position);
-    if (cell) {
-      cell.type = CellType.Start;
+    if (!this.isValidPosition(position)) {
+      return;
     }
+    this.cells[position.row][position.col] = new StartCell(position);
   }
 
   placePipe(position: Position, pipe: Pipe): boolean {
@@ -58,7 +62,15 @@ export class Grid {
     if (!cell || !cell.canPlacePipe()) {
       return false;
     }
-    cell.placePipe(pipe);
+
+    const newCell = new PipeCell(position, pipe);
+    if (cell.hasWater) {
+      newCell.waterFlows = [...cell.waterFlows];
+      newCell.usedDirections = new Set(cell.usedDirections);
+      newCell.hasWater = cell.hasWater;
+    }
+
+    this.cells[position.row][position.col] = newCell;
     return true;
   }
 
