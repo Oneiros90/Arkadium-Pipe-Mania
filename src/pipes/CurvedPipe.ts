@@ -20,6 +20,9 @@ export class CurvedPipe extends Pipe {
       ]
     );
   }
+  static createRandom(random: any): CurvedPipe {
+    return new CurvedPipe(random.choice([0, 90, 180, 270]));
+  }
 }
 
 PipeRegistry.register(CurvedPipe.TYPE, CurvedPipe);

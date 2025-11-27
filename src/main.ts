@@ -1,3 +1,4 @@
+import './pipes'; // Import pipes to trigger registration
 import { ConfigLoader } from './config/ConfigLoader';
 import { GameState } from './core/GameState';
 import { GameRenderer } from './rendering/GameRenderer';

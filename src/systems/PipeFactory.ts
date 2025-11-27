@@ -58,17 +58,15 @@ export class PipeFactory {
 
   private createPipe(type: string): Pipe {
     try {
-      if (type === 'straight') {
-        return PipeRegistry.create(type, this.random.choice([0, 90]));
-      } else if (type === 'curved') {
-        return PipeRegistry.create(type, this.random.choice([0, 90, 180, 270]));
-      } else {
-        return PipeRegistry.create(type);
-      }
+      return PipeRegistry.createRandom(type, this.random);
     } catch (e) {
       logger.error('PipeFactory', `Failed to create pipe of type ${type}`, e);
       // Fallback
-      return new (PipeRegistry.getRegisteredTypes().length > 0 ? PipeRegistry.getRegisteredTypes()[0] as any : Error)();
+      const types = PipeRegistry.getRegisteredTypes();
+      if (types.length > 0) {
+        return PipeRegistry.createRandom(types[0], this.random);
+      }
+      throw e;
     }
   }
 }

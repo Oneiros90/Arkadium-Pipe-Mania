@@ -35,6 +35,9 @@ export class CrossPipe extends Pipe {
         return Direction.East;
     }
   }
+  static createRandom(_random: any): CrossPipe {
+    return new CrossPipe();
+  }
 }
 
 PipeRegistry.register(CrossPipe.TYPE, CrossPipe);

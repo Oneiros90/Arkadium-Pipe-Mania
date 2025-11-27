@@ -18,6 +18,9 @@ export class StraightPipe extends Pipe {
       ]
     );
   }
+  static createRandom(random: any): StraightPipe {
+    return new StraightPipe(random.choice([0, 90]));
+  }
 }
 
 PipeRegistry.register(StraightPipe.TYPE, StraightPipe);
