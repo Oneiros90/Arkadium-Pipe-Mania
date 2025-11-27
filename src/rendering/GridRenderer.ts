@@ -7,7 +7,7 @@ import { logger } from '@/utils/Logger';
 import { AssetManager } from './AssetManager';
 
 export class GridRenderer {
-  private cellGraphics: Map<string, { bg: Sprite; pipe?: Sprite; water: Graphics }> = new Map();
+  private cellGraphics: Map<string, { bgContainer: Container; bg: Sprite; pipe?: Sprite; water: Graphics }> = new Map();
 
   private bgLayer: Container;
   private waterLayer: Container;
@@ -53,22 +53,28 @@ export class GridRenderer {
     let entry = this.cellGraphics.get(key);
 
     if (!entry) {
+      // Create a container to hold the background and its decorations
+      const bgContainer = new Container();
       const bg = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty));
       const water = new Graphics();
       // Pipe sprite is created on demand
 
-      bg.x = cell.position.col * this.visualConfig.grid.cellSize;
-      bg.y = cell.position.row * this.visualConfig.grid.cellSize;
+      bgContainer.x = cell.position.col * this.visualConfig.grid.cellSize;
+      bgContainer.y = cell.position.row * this.visualConfig.grid.cellSize;
+
+      bg.x = 0;
+      bg.y = 0;
 
       // Water shares position logic but is a Graphics object, so we draw at absolute coordinates or move it
       // Easier to move the graphics object itself
-      water.x = bg.x;
-      water.y = bg.y;
+      water.x = bgContainer.x;
+      water.y = bgContainer.y;
 
-      this.bgLayer.addChild(bg);
+      bgContainer.addChild(bg);
+      this.bgLayer.addChild(bgContainer);
       this.waterLayer.addChild(water);
 
-      entry = { bg, water };
+      entry = { bgContainer, bg, water };
       this.cellGraphics.set(key, entry);
     }
 
@@ -77,7 +83,7 @@ export class GridRenderer {
     // So we cast it or re-get it, but re-getting is inefficient.
     // Let's just use the local variables if we created a new entry, or cast entry.
 
-    const { bg, water } = entry!;
+    const { bgContainer, bg, water } = entry!;
 
     // Reset background
     bg.width = this.visualConfig.grid.cellSize;
@@ -90,8 +96,9 @@ export class GridRenderer {
     }
     water.clear();
 
-    // Clear any children from bg (e.g., start cell connectors)
-    bg.removeChildren();
+    // Clear any children from bgContainer (e.g., start cell connectors) except the bg sprite itself
+    bgContainer.removeChildren();
+    bgContainer.addChild(bg);
 
     switch (cell.type) {
       case CellType.Empty:
@@ -115,19 +122,24 @@ export class GridRenderer {
 
         // Add tank on top (covers connector centers)
         const tank = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.tank));
-        bg.addChild(tank);
+        tank.width = this.visualConfig.grid.cellSize;
+        tank.height = this.visualConfig.grid.cellSize;
+        tank.x = 0;
+        tank.y = 0;
+        bgContainer.addChild(tank);
 
         neighbors.forEach(n => {
           if (n.valid) {
             const connector = new Sprite(this.assetManager.getTexture(this.visualConfig.assets.backgrounds.connector));
             connector.anchor.set(0.5);
             connector.angle = n.rotation;
-            // Calculate center based on parent scale
-            // bg.scale accounts for the actual texture resolution vs cellSize
-            const centerPos = this.visualConfig.grid.cellSize / bg.scale.x / 2;
-            connector.x = centerPos;
-            connector.y = centerPos;
-            bg.addChild(connector);
+            // Position at the center of the cell
+            connector.x = this.visualConfig.grid.cellSize / 2;
+            connector.y = this.visualConfig.grid.cellSize / 2;
+            // Size the connector appropriately (you may need to adjust this based on your asset)
+            connector.width = this.visualConfig.grid.cellSize;
+            connector.height = this.visualConfig.grid.cellSize;
+            bgContainer.addChild(connector);
           }
         });
         break;
@@ -138,7 +150,7 @@ export class GridRenderer {
     }
   }
 
-  private drawPipeCell(entry: { bg: Sprite; pipe?: Sprite; water: Graphics }, cell: Cell): void {
+  private drawPipeCell(entry: { bgContainer: Container; bg: Sprite; pipe?: Sprite; water: Graphics }, cell: Cell): void {
     if (!cell.pipe) return;
 
     let texturePath = '';
@@ -365,7 +377,7 @@ export class GridRenderer {
 
   clear(): void {
     this.cellGraphics.forEach((entry) => {
-      entry.bg.destroy();
+      entry.bgContainer.destroy({ children: true });
       entry.water.destroy();
       if (entry.pipe) entry.pipe.destroy();
     });
