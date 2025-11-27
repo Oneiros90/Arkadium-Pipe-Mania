@@ -1,6 +1,7 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
 import { PipeRegistry } from '../core/PipeRegistry';
+import { Random } from '@/utils/Random';
 
 /**
  * A cross pipe segment connecting all four directions.
@@ -35,7 +36,7 @@ export class CrossPipe extends Pipe {
         return Direction.East;
     }
   }
-  static createRandom(_random: any): CrossPipe {
+  static createRandom(_random: Random): CrossPipe {
     return new CrossPipe();
   }
 }

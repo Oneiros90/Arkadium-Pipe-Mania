@@ -1,6 +1,7 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
 import { PipeRegistry } from '../core/PipeRegistry';
+import { Random } from '@/utils/Random';
 
 /**
  * A straight pipe segment connecting opposite directions (North-South or East-West).
@@ -18,7 +19,7 @@ export class StraightPipe extends Pipe {
       ]
     );
   }
-  static createRandom(random: any): StraightPipe {
+  static createRandom(random: Random): StraightPipe {
     return new StraightPipe(random.choice([0, 90]));
   }
 }

@@ -1,6 +1,7 @@
 import { Pipe } from '../core/Pipe';
 import { Direction } from '../core/types';
 import { PipeRegistry } from '../core/PipeRegistry';
+import { Random } from '@/utils/Random';
 
 /**
  * A curved pipe segment connecting adjacent directions (90-degree turn).
@@ -20,7 +21,7 @@ export class CurvedPipe extends Pipe {
       ]
     );
   }
-  static createRandom(random: any): CurvedPipe {
+  static createRandom(random: Random): CurvedPipe {
     return new CurvedPipe(random.choice([0, 90, 180, 270]));
   }
 }
