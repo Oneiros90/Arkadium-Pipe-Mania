@@ -1,5 +1,5 @@
-import { Pipe } from '../Pipe';
-import { Direction } from '../types';
+import { Pipe } from '../core/Pipe';
+import { Direction } from '../core/types';
 
 export class CurvedPipe extends Pipe {
     constructor(rotation: 0 | 90 | 180 | 270 = 0) {

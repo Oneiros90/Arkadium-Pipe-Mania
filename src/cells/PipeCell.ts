@@ -1,17 +1,19 @@
-import { Cell } from '../Cell';
-import { Position } from '../types';
+import { Cell } from '../core/Cell';
+import { Position } from '../core/types';
+import { Pipe } from '../core/Pipe';
 
-export class EmptyCell extends Cell {
-    constructor(position: Position) {
+export class PipeCell extends Cell {
+    constructor(position: Position, pipe: Pipe) {
         super(position);
+        this.pipe = pipe;
     }
 
     getTypeName(): string {
-        return 'empty';
+        return 'pipe';
     }
 
     isEmpty(): boolean {
-        return true;
+        return false;
     }
 
     isBlocked(): boolean {

@@ -1,7 +1,7 @@
 import { Pipe } from '@/core/Pipe';
-import { StraightPipe } from '@/core/pipes/StraightPipe';
-import { CurvedPipe } from '@/core/pipes/CurvedPipe';
-import { CrossPipe } from '@/core/pipes/CrossPipe';
+import { StraightPipe } from '@/pipes/StraightPipe';
+import { CurvedPipe } from '@/pipes/CurvedPipe';
+import { CrossPipe } from '@/pipes/CrossPipe';
 import { Random } from '@/utils/Random';
 import { PipeConfig } from '@/config/schemas';
 import { logger } from '@/utils/Logger';

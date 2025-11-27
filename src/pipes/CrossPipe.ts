@@ -1,5 +1,5 @@
-import { Pipe } from '../Pipe';
-import { Direction } from '../types';
+import { Pipe } from '../core/Pipe';
+import { Direction } from '../core/types';
 
 export class CrossPipe extends Pipe {
     constructor() {

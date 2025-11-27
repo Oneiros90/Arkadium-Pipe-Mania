@@ -1,13 +1,13 @@
-import { Cell } from '../Cell';
-import { Position } from '../types';
+import { Cell } from '../core/Cell';
+import { Position } from '../core/types';
 
-export class BlockedCell extends Cell {
+export class StartCell extends Cell {
     constructor(position: Position) {
         super(position);
     }
 
     getTypeName(): string {
-        return 'blocked';
+        return 'start';
     }
 
     isEmpty(): boolean {
@@ -15,11 +15,11 @@ export class BlockedCell extends Cell {
     }
 
     isBlocked(): boolean {
-        return true;
+        return false;
     }
 
     isStart(): boolean {
-        return false;
+        return true;
     }
 
     canPlacePipe(): boolean {

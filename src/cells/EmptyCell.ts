@@ -1,17 +1,17 @@
-import { Cell } from '../Cell';
-import { Position } from '../types';
+import { Cell } from '../core/Cell';
+import { Position } from '../core/types';
 
-export class StartCell extends Cell {
+export class EmptyCell extends Cell {
     constructor(position: Position) {
         super(position);
     }
 
     getTypeName(): string {
-        return 'start';
+        return 'empty';
     }
 
     isEmpty(): boolean {
-        return false;
+        return true;
     }
 
     isBlocked(): boolean {
@@ -19,10 +19,10 @@ export class StartCell extends Cell {
     }
 
     isStart(): boolean {
-        return true;
+        return false;
     }
 
     canPlacePipe(): boolean {
-        return false;
+        return this.waterFlows.length === 0;
     }
 }

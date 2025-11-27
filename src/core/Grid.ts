@@ -1,8 +1,8 @@
 import { Cell } from './Cell';
-import { EmptyCell } from './cells/EmptyCell';
-import { BlockedCell } from './cells/BlockedCell';
-import { StartCell } from './cells/StartCell';
-import { PipeCell } from './cells/PipeCell';
+import { EmptyCell } from '../cells/EmptyCell';
+import { BlockedCell } from '../cells/BlockedCell';
+import { StartCell } from '../cells/StartCell';
+import { PipeCell } from '../cells/PipeCell';
 import { Position, Direction } from './types';
 import { Pipe } from './Pipe';
 

@@ -1,10 +1,10 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import { Grid } from '@/core/Grid';
 import { Pipe } from '@/core/Pipe';
-import { StraightPipe } from '@/core/pipes/StraightPipe';
-import { CurvedPipe } from '@/core/pipes/CurvedPipe';
-import { CrossPipe } from '@/core/pipes/CrossPipe';
-import { PipeCell } from '@/core/cells/PipeCell';
+import { StraightPipe } from '@/pipes/StraightPipe';
+import { CurvedPipe } from '@/pipes/CurvedPipe';
+import { CrossPipe } from '@/pipes/CrossPipe';
+import { PipeCell } from '@/cells/PipeCell';
 import { Direction } from '@/core/types';
 import { GridRenderer } from '@/rendering/GridRenderer';
 import { ConfigLoader } from '@/config/ConfigLoader';
