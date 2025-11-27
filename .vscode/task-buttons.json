@@ -1,0 +1,10 @@
+{
+  "buttons": [
+    {
+      "name": "Run",
+      "task": "Run",
+      "icon": "🚀 ",
+      "tooltip": "Start the development environment"
+    }
+  ]
+}

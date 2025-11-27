@@ -6,7 +6,7 @@ export abstract class Pipe {
     public readonly connections: Direction[][]
   ) { }
 
-  abstract getTypeName(): string;
+  abstract readonly type: string;
 
   getActiveConnections(): Direction[] {
     const rotationIndex = this.rotation / 90;

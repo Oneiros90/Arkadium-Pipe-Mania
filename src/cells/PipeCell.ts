@@ -3,28 +3,17 @@ import { Position } from '../core/types';
 import { Pipe } from '../core/Pipe';
 
 export class PipeCell extends Cell {
-    constructor(position: Position, pipe: Pipe) {
-        super(position);
-        this.pipe = pipe;
-    }
+  readonly type = 'pipe';
+  readonly isEmpty = false;
+  readonly isBlocked = false;
+  readonly isStart = false;
 
-    getTypeName(): string {
-        return 'pipe';
-    }
+  constructor(position: Position, pipe: Pipe) {
+    super(position);
+    this.pipe = pipe;
+  }
 
-    isEmpty(): boolean {
-        return false;
-    }
-
-    isBlocked(): boolean {
-        return false;
-    }
-
-    isStart(): boolean {
-        return false;
-    }
-
-    canPlacePipe(): boolean {
-        return this.waterFlows.length === 0;
-    }
+  canPlacePipe(): boolean {
+    return this.waterFlows.length === 0;
+  }
 }

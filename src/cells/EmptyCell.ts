@@ -2,27 +2,16 @@ import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 
 export class EmptyCell extends Cell {
-    constructor(position: Position) {
-        super(position);
-    }
+  readonly type = 'empty';
+  readonly isEmpty = true;
+  readonly isBlocked = false;
+  readonly isStart = false;
 
-    getTypeName(): string {
-        return 'empty';
-    }
+  constructor(position: Position) {
+    super(position);
+  }
 
-    isEmpty(): boolean {
-        return true;
-    }
-
-    isBlocked(): boolean {
-        return false;
-    }
-
-    isStart(): boolean {
-        return false;
-    }
-
-    canPlacePipe(): boolean {
-        return this.waterFlows.length === 0;
-    }
+  canPlacePipe(): boolean {
+    return this.waterFlows.length === 0;
+  }
 }

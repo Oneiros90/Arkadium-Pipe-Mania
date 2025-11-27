@@ -2,27 +2,16 @@ import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 
 export class StartCell extends Cell {
-    constructor(position: Position) {
-        super(position);
-    }
+  readonly type = 'start';
+  readonly isEmpty = false;
+  readonly isBlocked = false;
+  readonly isStart = true;
 
-    getTypeName(): string {
-        return 'start';
-    }
+  constructor(position: Position) {
+    super(position);
+  }
 
-    isEmpty(): boolean {
-        return false;
-    }
-
-    isBlocked(): boolean {
-        return false;
-    }
-
-    isStart(): boolean {
-        return true;
-    }
-
-    canPlacePipe(): boolean {
-        return false;
-    }
+  canPlacePipe(): boolean {
+    return false;
+  }
 }

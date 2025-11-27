@@ -2,27 +2,16 @@ import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 
 export class BlockedCell extends Cell {
-    constructor(position: Position) {
-        super(position);
-    }
+  readonly type = 'blocked';
+  readonly isEmpty = false;
+  readonly isBlocked = true;
+  readonly isStart = false;
 
-    getTypeName(): string {
-        return 'blocked';
-    }
+  constructor(position: Position) {
+    super(position);
+  }
 
-    isEmpty(): boolean {
-        return false;
-    }
-
-    isBlocked(): boolean {
-        return true;
-    }
-
-    isStart(): boolean {
-        return false;
-    }
-
-    canPlacePipe(): boolean {
-        return false;
-    }
+  canPlacePipe(): boolean {
+    return false;
+  }
 }

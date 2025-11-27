@@ -110,7 +110,7 @@ export class GameState {
     this.pipeQueue.push(this.pipeFactory.createRandomPipe());
     this.onQueueUpdate(this.pipeQueue);
 
-    logger.debug('GameState', 'Pipe placed', { position, pipeType: pipe.getTypeName() });
+    logger.debug('GameState', 'Pipe placed', { position, pipeType: pipe.type });
 
     if (!this.timerRunning) {
       this.startGameTimer();

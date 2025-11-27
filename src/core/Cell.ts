@@ -16,10 +16,10 @@ export abstract class Cell {
     public readonly position: Position
   ) { }
 
-  abstract getTypeName(): string;
-  abstract isEmpty(): boolean;
-  abstract isBlocked(): boolean;
-  abstract isStart(): boolean;
+  abstract readonly type: string;
+  abstract readonly isEmpty: boolean;
+  abstract readonly isBlocked: boolean;
+  abstract readonly isStart: boolean;
   abstract canPlacePipe(): boolean;
 
   hasPipe(): boolean {

@@ -100,7 +100,7 @@ export class GridRenderer {
     bgContainer.removeChildren();
     bgContainer.addChild(bg);
 
-    switch (cell.getTypeName()) {
+    switch (cell.type) {
       case 'empty':
         bg.texture = this.assetManager.getTexture(this.visualConfig.assets.backgrounds.empty);
         break;
@@ -154,7 +154,7 @@ export class GridRenderer {
     if (!cell.pipe) return;
 
     let texturePath = '';
-    switch (cell.pipe.getTypeName()) {
+    switch (cell.pipe.type) {
       case 'straight':
         texturePath = this.visualConfig.assets.pipes.straight;
         break;
@@ -387,7 +387,7 @@ export class GridRenderer {
   private isValidNeighbor(row: number, col: number): boolean {
     const neighbor = this.grid.getCell({ row, col });
     if (!neighbor) return false; // Out of bounds
-    if (neighbor.isBlocked()) return false; // Blocked
+    if (neighbor.isBlocked) return false; // Blocked
     return true;
   }
 }
