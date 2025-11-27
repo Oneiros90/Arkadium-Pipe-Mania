@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="pipeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#ffeb3b;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#ffd700;stop-opacity:0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Single path for the cross shape to avoid double transparency -->
+  <path d="M30,0 L70,0 L70,30 L100,30 L100,70 L70,70 L70,100 L30,100 L30,70 L0,70 L0,30 L30,30 Z" fill="url(#pipeGradient)" stroke="#b7950b" stroke-width="2" stroke-opacity="0.8"/>
+  
+  <!-- Highlights -->
+  <line x1="35" y1="0" x2="35" y2="30" stroke="#ffff8d" stroke-width="2" stroke-opacity="0.6"/>
+  <line x1="35" y1="70" x2="35" y2="100" stroke="#ffff8d" stroke-width="2" stroke-opacity="0.6"/>
+  
+  <line x1="65" y1="0" x2="65" y2="30" stroke="#fbc02d" stroke-width="2" stroke-opacity="0.6"/>
+  <line x1="65" y1="70" x2="65" y2="100" stroke="#fbc02d" stroke-width="2" stroke-opacity="0.6"/>
+  
+  <line x1="0" y1="35" x2="30" y2="35" stroke="#ffff8d" stroke-width="2" stroke-opacity="0.6"/>
+  <line x1="70" y1="35" x2="100" y2="35" stroke="#ffff8d" stroke-width="2" stroke-opacity="0.6"/>
+  
+  <line x1="0" y1="65" x2="30" y2="65" stroke="#fbc02d" stroke-width="2" stroke-opacity="0.6"/>
+  <line x1="70" y1="65" x2="100" y2="65" stroke="#fbc02d" stroke-width="2" stroke-opacity="0.6"/>
+  
+  <!-- Center box highlight -->
+  <rect x="35" y="35" width="30" height="30" fill="none" stroke="#ffff8d" stroke-width="1" stroke-opacity="0.3"/>
+</svg>
