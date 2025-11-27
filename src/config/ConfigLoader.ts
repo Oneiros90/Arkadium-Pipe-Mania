@@ -11,9 +11,13 @@ export class ConfigLoader {
 
   static async loadFromFile(path: string): Promise<GameConfig> {
     try {
-      logger.info('ConfigLoader', `Loading configuration from: ${path}`);
+      // Use window.location to build correct path for GitHub Pages
+      const basePath = document.querySelector('base')?.getAttribute('href') || '/';
+      const fullPath = path.startsWith('/') ? `${basePath}${path.substring(1)}` : path;
 
-      const response = await fetch(path);
+      logger.info('ConfigLoader', `Loading configuration from: ${fullPath}`);
+
+      const response = await fetch(fullPath);
       if (!response.ok) {
         throw new Error(`Failed to fetch config: ${response.statusText}`);
       }
@@ -35,9 +39,13 @@ export class ConfigLoader {
 
   static async loadVisualConfig(path: string): Promise<VisualConfig> {
     try {
-      logger.info('ConfigLoader', `Loading visual configuration from: ${path}`);
+      // Use window.location to build correct path for GitHub Pages
+      const basePath = document.querySelector('base')?.getAttribute('href') || '/';
+      const fullPath = path.startsWith('/') ? `${basePath}${path.substring(1)}` : path;
 
-      const response = await fetch(path);
+      logger.info('ConfigLoader', `Loading visual configuration from: ${fullPath}`);
+
+      const response = await fetch(fullPath);
       if (!response.ok) {
         throw new Error(`Failed to fetch visual config: ${response.statusText}`);
       }
