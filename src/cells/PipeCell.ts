@@ -1,6 +1,7 @@
 import { Cell } from '../core/Cell';
 import { Position } from '../core/types';
 import { Pipe } from '../core/Pipe';
+import type { VisualConfig } from '@/config/schemas';
 
 /**
  * Represents a cell containing a pipe segment.
@@ -17,6 +18,10 @@ export class PipeCell extends Cell {
   }
 
   canPlacePipe(): boolean {
-    return this.waterFlows.length === 0;
+    return false;
+  }
+
+  getBackgroundTexture(config: VisualConfig): string {
+    return config.assets.pipes.background;
   }
 }

@@ -42,19 +42,7 @@ export class QueueRenderer {
   }
 
   private getPipeSprite(pipe: Pipe): Sprite {
-    let texturePath = '';
-    switch (pipe.type) {
-      case 'straight':
-        texturePath = this.visualConfig.assets.pipes.straight;
-        break;
-      case 'curved':
-        texturePath = this.visualConfig.assets.pipes.curved;
-        break;
-      case 'cross':
-        texturePath = this.visualConfig.assets.pipes.cross;
-        break;
-    }
-
+    const texturePath = pipe.getTexturePath(this.visualConfig);
     const pipeSprite = new Sprite(this.assetManager.getTexture(texturePath));
     pipeSprite.width = this.visualConfig.grid.cellSize;
     pipeSprite.height = this.visualConfig.grid.cellSize;

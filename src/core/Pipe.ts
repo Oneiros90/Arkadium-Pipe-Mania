@@ -1,4 +1,10 @@
 import { Direction } from './types';
+import type { VisualConfig } from '@/config/schemas';
+
+interface WaterConfig {
+  widthRatio: number;
+  curveStrength: number;
+}
 
 /**
  * Abstract base class representing a pipe segment.
@@ -11,6 +17,14 @@ export abstract class Pipe {
   ) { }
 
   abstract readonly type: string;
+
+  abstract getTexturePath(config: VisualConfig): string;
+  abstract getWaterPathFunction(
+    entryDir: Direction,
+    exitDir: Direction | null,
+    cellSize: number,
+    waterConfig: WaterConfig
+  ): (t: number) => { x: number; y: number };
 
   getActiveConnections(): Direction[] {
     const rotationIndex = this.rotation / 90;

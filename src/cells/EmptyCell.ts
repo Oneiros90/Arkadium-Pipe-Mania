@@ -1,4 +1,5 @@
 import { Cell } from '../core/Cell';
+import type { VisualConfig } from '@/config/schemas';
 import { Position } from '../core/types';
 
 /**
@@ -15,6 +16,10 @@ export class EmptyCell extends Cell {
   }
 
   canPlacePipe(): boolean {
-    return this.waterFlows.length === 0;
+    return true;
+  }
+
+  getBackgroundTexture(config: VisualConfig): string {
+    return config.assets.backgrounds.empty;
   }
 }

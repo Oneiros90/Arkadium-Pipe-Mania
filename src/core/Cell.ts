@@ -1,5 +1,9 @@
 import { Position, Direction } from './types';
 import { Pipe } from './Pipe';
+import type { VisualConfig } from '@/config/schemas';
+import type { Container } from 'pixi.js';
+import type { AssetManager } from '@/rendering/AssetManager';
+import type { Grid } from './Grid';
 
 interface WaterFlow {
   level: number;
@@ -25,6 +29,14 @@ export abstract class Cell {
   abstract readonly isBlocked: boolean;
   abstract readonly isStart: boolean;
   abstract canPlacePipe(): boolean;
+
+  abstract getBackgroundTexture(config: VisualConfig): string;
+  renderCustomGraphics?(
+    container: Container,
+    config: VisualConfig,
+    assetManager: AssetManager,
+    grid: Grid
+  ): void;
 
   hasPipe(): boolean {
     return this.pipe !== null;

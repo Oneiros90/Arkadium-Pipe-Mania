@@ -1,4 +1,5 @@
 import { Cell } from '../core/Cell';
+import type { VisualConfig } from '@/config/schemas';
 import { Position } from '../core/types';
 
 /**
@@ -16,5 +17,9 @@ export class BlockedCell extends Cell {
 
   canPlacePipe(): boolean {
     return false;
+  }
+
+  getBackgroundTexture(config: VisualConfig): string {
+    return config.assets.backgrounds.blocked;
   }
 }
